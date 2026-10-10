@@ -102,3 +102,16 @@ Numbered in `open-questions.md` when logged. Not built until decided.
     question. (#383)
   - The carried #374–#377 (Phase 43's digest) and #221 (outside the
     app) were reviewed and change nothing in Phase 44.
+- **Found by the reviews (2026-10-10), decided by the owner the same
+  day:**
+  - **A zero total.** The page showed "—" but Ask's `coming_up` said
+    "at least £0.00" (what a member without cost access got), and the
+    widget's "—" had no words for screen readers. *Decided:* "—"
+    everywhere, read out as "No known cost"; the tool gives no display
+    string and no figure for it. (#384)
+  - **The page's summary heading** read "Next 12 months" over the
+    *Next 3 months* tile. *Decided:* the heading is "Summary" ("Summary
+    in {currency}"), and the 12-month total tile is labelled "Next 12
+    months". (#385)
+  - The security review found nothing; the spec review's paperwork gaps
+    were fixed.

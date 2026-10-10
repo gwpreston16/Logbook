@@ -356,13 +356,14 @@ final class ComingUpTest extends ReminderTestCase
 
         $html = self::body($this->browser->get('/upcoming'));
 
-        self::assertStringContainsString('Next 12 months in British Pound', $html);
-        self::assertStringContainsString('Next 12 months in Euro', $html);
+        self::assertStringContainsString('Summary in British Pound', $html);
+        self::assertStringContainsString('Summary in Euro', $html);
         self::assertStringContainsString('about €640.00 (last time)', $html);
         self::assertStringContainsString('at least £1,136.00', $html, 'the euros are not added in');
         self::assertStringContainsString('about £656.00', $html, 'nor in the next 3 months');
         self::assertMatchesRegularExpression(
-            '~Next 3 months</dt>\s*<dd class="stat__value tabular">—</dd>~u',
+            '~Next 3 months</dt>\s*<dd class="stat__value tabular"><span aria-hidden="true">—</span>'
+                . '<span class="visually-hidden">No known cost</span></dd>~u',
             $html,
             'February is past the next 3 months: "—", as an empty month',
         );

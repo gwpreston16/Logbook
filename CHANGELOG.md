@@ -19,8 +19,9 @@ up* beside the items it adds up.
   time's price, never an average); with any item of unknown cost, or a
   shared vehicle whose costs you don't see, it reads "at least". Per
   currency, never converted; "—" while nothing in those months has a
-  known cost. A fourth figure in the page's summary, and a line above
-  *Next 12 months* on the dashboard widget and the overview card.
+  known cost. A fourth figure in the page's summary (now headed
+  *Summary*, its 12-month total labelled *Next 12 months*), and a line
+  above *Next 12 months* on the dashboard widget and the overview card.
 - **Ask's `coming_up` returns the same total** (`next_3_months`, raw
   values and the display string), so the model quotes it rather than
   adding anything up.

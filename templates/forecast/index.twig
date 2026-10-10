@@ -78,12 +78,12 @@
                             totals.hasFuel ? forecast_ui.amount(totals.fuel(), false) : dash,
                             totals.hasFuel ? ('coming_up.fuel_basis.' ~ unit)|trans : 'coming_up.fuel_missing'|trans) }}
                         {% endif %}
-                        {{ ui.stat('coming_up.summary.total'|trans,
+                        {{ ui.stat('coming_up.summary.year'|trans,
                             forecast_ui.amount(totals.total(), totals.isAtLeast()),
                             'coming_up.summary.total_sub'|trans) }}
                         {% set soon = totals.soon() %}
                         {{ ui.stat('coming_up.summary.soon'|trans,
-                            soon.total().isZero() ? dash : forecast_ui.amount(soon.total(), soon.isAtLeast()),
+                            soon.total().isZero() ? forecast_ui.no_known_cost() : forecast_ui.amount(soon.total(), soon.isAtLeast()),
                             soon.unknown() > 0 ? 'coming_up.unknown_count'|trans({count: soon.unknown()}) : 'coming_up.summary.soon_sub'|trans) }}
                     </dl>
 

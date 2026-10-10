@@ -77,12 +77,15 @@ final class ComingUpToolTest extends ToolsBTestCase
         $this->document($app, $golf, ComplianceType::Insurance, '2025-11-21', '2026-11-20', '312.40');
         $access->except($golf, VehicleAbility::ViewCosts);
 
-        $data = $this->data($app, $owner, 'coming_up');
+        $result = $this->toolResult($app, $owner, 'coming_up');
+        $data = new JsonDoc($result->data);
 
         self::assertFalse($data->has('items', 0, 'last_cost'));
+        self::assertStringNotContainsString('0.00', $result->figures[0] ?? '', 'no "at least £0.00" figure');
         self::assertStringNotContainsString('312', self::json($data));
         self::assertTrue($data->get('next_3_months', 0, 'at_least'), 'counted as no known cost (#383)');
         self::assertSame(1, $data->int('next_3_months', 0, 'items_without_cost'));
+        self::assertNull($data->get('next_3_months', 0, 'display'), 'as the page\'s "—" (#384)');
     }
 
     public function testAnotherUsersVehicleIsNotFound(): void

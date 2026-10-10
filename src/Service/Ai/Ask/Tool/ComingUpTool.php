@@ -98,7 +98,8 @@ final readonly class ComingUpTool implements AskTool
                 . ($item->dueOn === null ? '' : ' · ' . $this->kit->format->date($item->dueOn)),
             array_slice($items, 0, 3),
         );
-        array_unshift($figures, ...array_map($this->soonDisplay(...), $soon));
+        $soonFigures = array_values(array_filter(array_map($this->soonDisplay(...), $soon)));
+        array_unshift($figures, ...$soonFigures);
         $one = $named && count($vehicles) === 1 ? $vehicles[0] : null;
 
         return new ToolResult(
@@ -110,7 +111,8 @@ final readonly class ComingUpTool implements AskTool
                 'next_3_months' => array_map($this->soonRow(...), $soon),
                 'note' => 'Archived vehicles have nothing coming up. A cost is the price paid last time, where known. '
                     . 'next_3_months is this month (overdue items included) and the next two, planned and fuel; '
-                    . 'with items_without_cost above 0 it is "at least". Quote its display unchanged.',
+                    . 'with items_without_cost above 0 it is "at least". Quote its display unchanged; a null display '
+                    . 'means nothing in those months has a known cost.',
             ],
             $this->kit->source([
                 $this->kit->t('ask.tool.coming_up'),
@@ -140,10 +142,15 @@ final readonly class ComingUpTool implements AskTool
     }
 
     /**
-     * "about £620" or "at least £620", as the page shows it.
+     * "about £620" or "at least £620", as the page shows it; null while
+     * nothing in those months has a known cost, where the page shows "—" (#384).
      */
-    private function soonDisplay(ForecastTotals $totals): string
+    private function soonDisplay(ForecastTotals $totals): ?string
     {
+        if ($totals->total()->isZero()) {
+            return null;
+        }
+
         return $this->kit->t(
             $totals->isAtLeast() ? 'coming_up.at_least' : 'coming_up.about',
             ['amount' => $this->kit->format->money($totals->total())],

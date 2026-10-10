@@ -76,13 +76,18 @@
     </li>
 {%- endmacro %}
 
+{# "—" with words for screen readers: nothing in it has a known cost (#384). #}
+{% macro no_known_cost() -%}
+    <span aria-hidden="true">—</span><span class="visually-hidden">{{ 'coming_up.no_known_cost'|trans }}</span>
+{%- endmacro %}
+
 {# One total as a line: "Next 12 months: about £1,240 · includes £400 of fuel".
    With `dash_if_zero`, "—" while nothing in it has a known cost, as a month's figure. #}
 {% macro total_line(label, totals, dash_if_zero = false) -%}
     {% import _self as forecast_ui %}
     <p class="forecast-total">
         <span>{{ label }}</span>
-        <strong class="tabular">{{ dash_if_zero and totals.total().isZero() ? '—' : forecast_ui.amount(totals.total(), totals.isAtLeast()) }}</strong>
+        <strong class="tabular">{{ dash_if_zero and totals.total().isZero() ? forecast_ui.no_known_cost() : forecast_ui.amount(totals.total(), totals.isAtLeast()) }}</strong>
         {%- if totals.hasFuel %}<span class="muted"> · {{ 'coming_up.includes_fuel'|trans({amount: totals.fuel()|money}) }}</span>{% endif -%}
     </p>
 {%- endmacro %}
