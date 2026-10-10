@@ -103,6 +103,10 @@ final class ComingUpTest extends ReminderTestCase
         // 240 × 2 + 480 + 88 × 2, with the reminder unknown.
         self::assertStringContainsString('at least £1,136.00', $html);
         self::assertStringContainsString('1 item without a known cost', $html);
+        // Next 3 months (Phase 44): this month and the two after, the roof bars in June not among them.
+        self::assertStringContainsString('Next 3 months', $html);
+        self::assertStringContainsString('about £656.00', $html);
+        self::assertStringContainsString('this month and the next two', $html);
         self::assertStringContainsString('Nothing is adjusted for inflation.', $html, 'an estimate, and says so');
     }
 
@@ -272,6 +276,9 @@ final class ComingUpTest extends ReminderTestCase
         self::assertStringNotContainsString('Volkswagen Golf ·', $card, 'the vehicle is not repeated on its own page');
         self::assertStringContainsString('Next 12 months:', $card);
         self::assertStringContainsString('at least £1,136.00', $card);
+        // Phase 44: both tyres (October, November) and the insurance (30 Nov); the service in February is out.
+        self::assertMatchesRegularExpression('~Next 3 months:</span>\s*<strong class="tabular">about £656.00</strong>~', $card);
+        self::assertLessThan(strpos($card, 'Next 12 months:'), strpos($card, 'Next 3 months:'), 'above the 12-month line');
 
         $this->service($this->app, VehicleService::class)->archive($this->owner($this->app), $golf);
         self::assertStringNotContainsString('coming-up-heading', self::body($this->browser->get('/vehicles/' . $golf->id)));
@@ -304,6 +311,8 @@ final class ComingUpTest extends ReminderTestCase
         $widget = self::sectionOf($html, 'widget-coming_up-title');
         self::assertStringContainsString('href="/upcoming"', $widget);
         self::assertStringContainsString('Renew Insurance', $widget);
+        self::assertStringContainsString('Next 3 months:', $widget);
+        self::assertStringContainsString('about £656.00', $widget);
 
         $this->car('Ford', 'Transit');
         $pinned = self::sectionOf(self::body($this->browser->get('/?vehicle=' . $golf->id)), 'widget-coming_up-title');
@@ -351,6 +360,12 @@ final class ComingUpTest extends ReminderTestCase
         self::assertStringContainsString('Next 12 months in Euro', $html);
         self::assertStringContainsString('about €640.00 (last time)', $html);
         self::assertStringContainsString('at least £1,136.00', $html, 'the euros are not added in');
+        self::assertStringContainsString('about £656.00', $html, 'nor in the next 3 months');
+        self::assertMatchesRegularExpression(
+            '~Next 3 months</dt>\s*<dd class="stat__value tabular">—</dd>~u',
+            $html,
+            'February is past the next 3 months: "—", as an empty month',
+        );
     }
 
     public function testRemindersAndNotificationsAreLeftAsTheyWere(): void

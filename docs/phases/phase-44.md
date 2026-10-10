@@ -40,17 +40,17 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`spec.md`](../../spec.md) §7.8
       open questions below decided; `ROADMAP.md` row.
 
 ### 44.1 The total
-- [ ] The sum of the first three months' totals (this month with the
+- [x] The sum of the first three months' totals (this month with the
       overdue items, and the two after; planned and fuel), per currency
       (never converted); "at least" with any item of unknown cost,
       hidden costs included (#379–#383). A line above the 12-month one on
       the widget and the overview card; a fourth stat in the page's
       summary; translations.
-- [ ] `coming_up` returns it as raw values and display strings;
+- [x] `coming_up` returns it as raw values and display strings;
       `horizon_months` counts calendar months as the page does (#381).
 
 ### 44.2 Tests and release
-- [ ] The sum to the penny; currencies kept apart; `ViewCosts`; items
+- [x] The sum to the penny; currencies kept apart; `ViewCosts`; items
       without a cost; the window's edges in the owner's time zone; the
       tool's items and total cover the same months.
 - [ ] `VERSION`, `CHANGELOG.md`, README; `ROADMAP.md` row ✅. Tag once

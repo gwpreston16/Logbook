@@ -76,14 +76,22 @@
     </li>
 {%- endmacro %}
 
-{# The 12-month total of each currency, one line each: "Next 12 months: about £1,240". #}
+{# One total as a line: "Next 12 months: about £1,240 · includes £400 of fuel".
+   With `dash_if_zero`, "—" while nothing in it has a known cost, as a month's figure. #}
+{% macro total_line(label, totals, dash_if_zero = false) -%}
+    {% import _self as forecast_ui %}
+    <p class="forecast-total">
+        <span>{{ label }}</span>
+        <strong class="tabular">{{ dash_if_zero and totals.total().isZero() ? '—' : forecast_ui.amount(totals.total(), totals.isAtLeast()) }}</strong>
+        {%- if totals.hasFuel %}<span class="muted"> · {{ 'coming_up.includes_fuel'|trans({amount: totals.fuel()|money}) }}</span>{% endif -%}
+    </p>
+{%- endmacro %}
+
+{# Each currency's *Next 3 months* and 12-month totals, one line each (spec.md §7.18). #}
 {% macro next_twelve(forecast) -%}
     {% import _self as forecast_ui %}
     {% for totals in forecast.totals %}
-        <p class="forecast-total">
-            <span>{{ 'coming_up.next_12_months'|trans }}</span>
-            <strong class="tabular">{{ forecast_ui.amount(totals.total(), totals.isAtLeast()) }}</strong>
-            {%- if totals.hasFuel %}<span class="muted"> · {{ 'coming_up.includes_fuel'|trans({amount: totals.fuel()|money}) }}</span>{% endif -%}
-        </p>
+        {{ forecast_ui.total_line('coming_up.next_3_months'|trans, totals.soon(), true) }}
+        {{ forecast_ui.total_line('coming_up.next_12_months'|trans, totals) }}
     {% endfor %}
 {%- endmacro %}

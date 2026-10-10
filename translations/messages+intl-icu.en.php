@@ -2751,6 +2751,7 @@ return [
         'view_all' => 'View all',
         'card_link' => 'Next 12 months',
         'nothing_due' => 'Nothing due in the next 12 months.',
+        'next_3_months' => 'Next 3 months:',
         'next_12_months' => 'Next 12 months:',
         'includes_fuel' => 'includes {amount} of fuel',
         'about' => 'about {amount}',
@@ -2795,6 +2796,8 @@ return [
             'fuel' => 'Fuel (estimate)',
             'total' => 'Total',
             'total_sub' => 'planned and fuel',
+            'soon' => 'Next 3 months',
+            'soon_sub' => 'this month and the next two',
         ],
         'source' => [
             'first_inspection' => 'First MOT',

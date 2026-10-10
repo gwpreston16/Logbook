@@ -459,6 +459,72 @@ final class ForecastCalculatorTest extends TestCase
         self::assertSame('610.000', $eur->months[1]->planned->toDecimal(3), 'November');
     }
 
+    public function testNextThreeMonthsIsThisMonthAndTheTwoAfterToThePenny(): void
+    {
+        // 30 mi a day at £0.15/mi: £4.50 a day, 92 days from 1 Oct to 31 Dec.
+        $rate = self::rate([self::fill('2025-11-01T12:00:00Z', '100.00'), self::fill('2026-06-01T12:00:00Z', '50.00')]);
+        $golf = self::sources(
+            schedules: [
+                self::schedule(months: 6, doneOn: '2026-01-01', cost: '90.01'),
+                self::schedule(months: 6, doneOn: '2026-07-01', cost: '240.05', id: 2),
+            ],
+            documents: [self::document(ComplianceType::Insurance, start: null, expiry: '2026-12-31', cost: '100.10')],
+            reminders: [self::manual(1, 'Fit the roof bars', '2026-11-15')],
+            kmPerDay: 30 * DistanceUnit::KM_PER_MILE,
+            fuel: $rate,
+        );
+        $ducato = self::sources(
+            documents: [self::document(ComplianceType::Insurance, start: null, expiry: '2026-11-30', cost: '610.00')],
+            vehicle: self::vehicle(2, 'Ducato'),
+            currency: 'EUR',
+        );
+        $forecast = self::forecast($golf, $ducato);
+
+        [$gbp, $eur] = $forecast->totals;
+        $soon = $gbp->soon();
+        self::assertCount(3, $soon->months);
+        self::assertSame('190.11', $soon->planned()->toDecimal(2), 'the overdue 90.01 and the policy on 31 Dec; 1 Jan is out');
+        self::assertSame('414.00', $soon->fuel()->toDecimal(2));
+        self::assertSame('604.11', $soon->total()->toDecimal(2));
+        self::assertSame(1, $soon->unknown(), 'the roof bars');
+        self::assertTrue($soon->isAtLeast());
+        self::assertSame('670.21', $gbp->planned()->toDecimal(2), 'the 12 months add 240.05 twice');
+
+        self::assertSame('EUR', $eur->soon()->currency, 'currencies kept apart');
+        self::assertSame('610.00', $eur->soon()->total()->toDecimal(2));
+        self::assertFalse($eur->soon()->isAtLeast());
+    }
+
+    public function testNextThreeMonthsFromMidMonthStillEndsTwoMonthsOn(): void
+    {
+        // On 20 Oct the window is 20 Oct – 31 Dec: a policy on 1 Jan is out.
+        $forecast = ForecastCalculator::forecast([self::sources(documents: [
+            self::document(ComplianceType::Insurance, start: null, expiry: '2026-12-31', cost: '100.00'),
+            self::document(ComplianceType::Inspection, start: null, expiry: '2027-01-01', cost: '54.85'),
+        ])], self::date('2026-10-20'));
+
+        $soon = $forecast->totals[0]->soon();
+        self::assertSame('100.00', $soon->total()->toDecimal(2));
+        self::assertSame('154.85', $forecast->totals[0]->total()->toDecimal(2));
+        self::assertSame([], $forecast->totals[0]->firstMonths(0)->months);
+    }
+
+    public function testNextThreeMonthsFollowsTheOwnersToday(): void
+    {
+        // 00:30 on 1 Jan 2027 in Auckland is still 31 Dec in UTC:
+        // January to March there, December to February in UTC.
+        $clock = new MutableClock(new DateTimeImmutable('2026-12-31T11:30:00Z'));
+        $policy = self::document(ComplianceType::Insurance, start: null, expiry: '2027-03-31', cost: '300.00');
+        $sources = [self::sources(documents: [$policy])];
+
+        $auckland = ForecastCalculator::forecast($sources, LocalTime::today($clock, new DateTimeZone('Pacific/Auckland')));
+        $utc = ForecastCalculator::forecast($sources, LocalTime::today($clock, new DateTimeZone('UTC')));
+
+        self::assertSame('300.00', $auckland->totals[0]->soon()->total()->toDecimal(2));
+        self::assertSame('0.00', $utc->totals[0]->soon()->total()->toDecimal(2));
+        self::assertSame('300.00', $utc->totals[0]->total()->toDecimal(2));
+    }
+
     public function testUndatedItemsAreInNoTotal(): void
     {
         $forecast = self::forecast(self::sources(

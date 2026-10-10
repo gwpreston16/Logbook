@@ -2748,6 +2748,7 @@ return [
         'view_all' => 'Alle anzeigen',
         'card_link' => 'Nächste 12 Monate',
         'nothing_due' => 'In den nächsten 12 Monaten ist nichts fällig.',
+        'next_3_months' => 'Nächste 3 Monate:',
         'next_12_months' => 'Nächste 12 Monate:',
         'includes_fuel' => 'davon {amount} Kraftstoff',
         'about' => 'etwa {amount}',
@@ -2792,6 +2793,8 @@ return [
             'fuel' => 'Kraftstoff (Schätzung)',
             'total' => 'Gesamt',
             'total_sub' => 'geplant und Kraftstoff',
+            'soon' => 'Nächste 3 Monate',
+            'soon_sub' => 'dieser und die nächsten zwei Monate',
         ],
         'source' => [
             'first_inspection' => 'Erste HU',

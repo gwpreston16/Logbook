@@ -81,6 +81,10 @@
                         {{ ui.stat('coming_up.summary.total'|trans,
                             forecast_ui.amount(totals.total(), totals.isAtLeast()),
                             'coming_up.summary.total_sub'|trans) }}
+                        {% set soon = totals.soon() %}
+                        {{ ui.stat('coming_up.summary.soon'|trans,
+                            soon.total().isZero() ? dash : forecast_ui.amount(soon.total(), soon.isAtLeast()),
+                            soon.unknown() > 0 ? 'coming_up.unknown_count'|trans({count: soon.unknown()}) : 'coming_up.summary.soon_sub'|trans) }}
                     </dl>
 
                     <section class="card" aria-labelledby="months-{{ currency }}">
