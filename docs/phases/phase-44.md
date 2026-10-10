@@ -3,7 +3,7 @@
 *What the next three months will probably cost, where the items already
 are.*
 
-Status: 🚧 in progress · file lives in `docs/phases/`
+Status: ✅ complete · released as **v3.10.0** · file lives in `docs/phases/`
 
 The prototype's insight "about £x due in the next 3 months" was handed
 to the model in Phase 33.4 (#174). Phase 42 decided it is not an insight
@@ -53,8 +53,8 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`spec.md`](../../spec.md) §7.8
 - [x] The sum to the penny; currencies kept apart; `ViewCosts`; items
       without a cost; the window's edges in the owner's time zone; the
       tool's items and total cover the same months.
-- [ ] `VERSION`, `CHANGELOG.md`, README; `ROADMAP.md` row ✅. Tag once
-      merged.
+- [x] `VERSION` → 3.10.0, `CHANGELOG.md`, README; `ROADMAP.md` row ✅.
+- [ ] Tag `v3.10.0` once merged.
 
 ---
 

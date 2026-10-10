@@ -10093,7 +10093,7 @@ task breakdowns live in the per-phase files; this is the map.
   with any item of unknown cost or hidden costs (§7.18); on the page's
   summary, the widget and the overview card; Ask's `coming_up` returns
   it, and its `horizon_months` counts calendar months as the page does
-  (#379–#383). No migration. See
+  (#379–#383). No migration. Release v3.10.0. See
   [`phase-44.md`](docs/phases/phase-44.md).
 ---
 
