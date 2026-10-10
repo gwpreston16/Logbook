@@ -4825,7 +4825,7 @@ nothing about reminders (§7.6). Derived on every read
   Only the costs *Coming up* already shows; items of a vehicle whose
   costs the viewer may not see count as having no known cost, so the
   total reads "at least £…" and counts them, as the 12-month one does.
-  Shown as "Next 3 months: about £620 · includes £180 fuel"; "—" while
+  Shown as "Next 3 months: about £620 · includes £180 of fuel"; "—" while
   nothing in those months has a known cost, as a month's figure.
 - **Fleet page `/upcoming`** (core, like `/history`; linked from the
   dashboard widget and the overview card): the 12-month summary per

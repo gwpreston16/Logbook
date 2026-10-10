@@ -3,7 +3,7 @@
 *What the next three months will probably cost, where the items already
 are.*
 
-Status: ✅ complete · released as **v3.10.0** · file lives in `docs/phases/`
+Status: 🚧 in progress · file lives in `docs/phases/`
 
 The prototype's insight "about £x due in the next 3 months" was handed
 to the model in Phase 33.4 (#174). Phase 42 decided it is not an insight
