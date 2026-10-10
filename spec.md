@@ -2698,7 +2698,8 @@ toggles.
   §7.34 *Dashboard widget*.
 - **Coming up** (id `coming_up`, Phase 15; core): the next five items of
   the 12-month forecast (§7.18) across the vehicle filter, overdue first,
-  and the 12-month total per currency; *View all* → `/upcoming`, keeping
+  and the *Next 3 months* and 12-month totals per currency (Phase 44);
+  *View all* → `/upcoming`, keeping
   `?vehicle=`. Appended to saved layouts by the rule above.
 - **Needs attention** (id `needs_attention`, Phase 24; core; first in the
   default order, appended to saved layouts by the rule above): the items
@@ -4734,7 +4735,7 @@ nothing about reminders (§7.6). Derived on every read
 - **Horizon:** from the owner's today (in their time zone) to the last day
   of the 11th calendar month after this one: this month and the 11 after, as
   the reports' *last 12 months* (§7.7) in reverse. Only 12 months; no other
-  horizon.
+  horizon (Ask's `coming_up` may list fewer of them, §7.26).
 - **Read from the sources, not from the reminders table.** The items come
   from the same due-point calculations the reminders use (a schedule's next
   due and distance projection §7.4, a document's expiry §7.5, the tyre
@@ -4816,9 +4817,23 @@ nothing about reminders (§7.6). Derived on every read
   (they may fall outside the horizon); the summary says how many there are.
   A total with any item of unknown cost reads "at least £…". Everything is
   an estimate and says so.
+- **Next 3 months** (Phase 44, #379–#383): per currency, the sum of the
+  first three months' totals above: this month (overdue items included)
+  and the two after, planned and fuel together, as the 12-month total is
+  for twelve. Calendar months, like the horizon, so the page's sections,
+  chart and totals agree (on the 30th it covers just over two months).
+  Only the costs *Coming up* already shows; items of a vehicle whose
+  costs the viewer may not see count as having no known cost, so the
+  total reads "at least £…" and counts them, as the 12-month one does.
+  Shown as "Next 3 months: about £620 · includes £180 of fuel"; "—" (read
+  out as "No known cost") while nothing in those months has a known
+  cost, as a month's figure, and then Ask's `coming_up` gives no display
+  string for it either (#384).
 - **Fleet page `/upcoming`** (core, like `/history`; linked from the
-  dashboard widget and the overview card): the 12-month summary per
-  currency (planned, fuel, total, items without a known cost), a stacked bar
+  dashboard widget and the overview card): a summary per currency headed
+  "Summary" ("Summary in {currency}" with several; #385): the 12 months'
+  planned, fuel and total (labelled "Next 12 months"), items without a
+  known cost, and the *Next 3 months* total, then a stacked bar
   chart of planned and fuel per month (a table without JS), then *Overdue*,
   one section per month (heading an ICU month name; each item with its
   source icon, title, vehicle, `<time>` date or "around {month}", expected
@@ -4827,11 +4842,13 @@ nothing about reminders (§7.6). Derived on every read
   vehicles, the dashboard's vehicle chips (`?vehicle=`; an unknown or
   archived id falls back to all). *Export CSV* in the toolbar.
 - **Overview *Coming up* card** (active vehicles only; core): the vehicle's
-  next five items (overdue first, then by date, then undated) and its
-  12-month estimate, linking to `/upcoming?vehicle={id}`. Not a new tab.
+  next five items (overdue first, then by date, then undated), its
+  *Next 3 months* total and its 12-month estimate (one line each, in that
+  order), linking to `/upcoming?vehicle={id}`. Not a new tab.
 - **Dashboard widget** `coming_up` (§7.8): the next five items across the
-  dashboard's vehicle filter, ordered as the card, and the 12-month total;
-  *View all* links to `/upcoming` keeping `?vehicle=`.
+  dashboard's vehicle filter, ordered as the card, and the *Next 3 months*
+  and 12-month totals as the card shows them; *View all* links to
+  `/upcoming` keeping `?vehicle=`.
 - **CSV** `/upcoming.csv` with the page's filter (§7.7 *CSV export*).
 - **Finance** (Phase 29.2, §7.32): each active agreement's payments in
   the horizon as one line per vehicle ("Finance payments, 12 × £312.40"),
@@ -6331,7 +6348,7 @@ request to any model service.
   | `fuel_stats(vehicle?, period, grade?)` | fuel services, Phase 16 | economy, volume, spend, price per unit, by grade, verdicts |
   | `maintenance(vehicle, category?, text?, period?, limit?)` | maintenance repository | records, newest first |
   | `last_done(vehicle, category or schedule)` | schedules (§7.4) | last date and odometer |
-  | `coming_up(vehicles?, horizon_months?)` | *Coming up* (§7.18) | items with dates and costs (per `ViewCosts`) |
+  | `coming_up(vehicles?, horizon_months?)` | *Coming up* (§7.18) | items with dates and costs (per `ViewCosts`), and the *Next 3 months* total per currency as raw values and display strings (Phase 44; no display while nothing in those months has a known cost, #384); `horizon_months` (default 12) counts calendar months as the page does: this month and the n − 1 after |
   | `documents(vehicle?, type?)` | compliance | current and past, with expiry |
   | `tyres(vehicle)` | tyre judgement | fitted and stored, tread, wear estimate |
   | `mileage(vehicle?, period)` | mileage services | distance driven, average per month and year |
@@ -10074,7 +10091,12 @@ task breakdowns live in the per-phase files; this is the map.
   v3.9.0. See [`phase-43.md`](docs/phases/phase-43.md).
 - **Phase 44 — A *Next 3 months* total on *Coming up* + release.** The
   prototype's 3-month outlook as a total on the *Coming up* page and
-  widget, not an insight (#355). See
+  widget, not an insight (#355): the sum of this month (overdue
+  included) and the two after, planned and fuel, per currency, "at least"
+  with any item of unknown cost or hidden costs (§7.18); on the page's
+  summary, the widget and the overview card; Ask's `coming_up` returns
+  it, and its `horizon_months` counts calendar months as the page does
+  (#379–#383). No migration. Release v3.10.0. See
   [`phase-44.md`](docs/phases/phase-44.md).
 ---
 

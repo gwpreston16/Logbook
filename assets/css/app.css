@@ -6157,6 +6157,10 @@ a.list__title:hover {
     margin: var(--space-2) 0 0;
 }
 
+.forecast-total + .forecast-total {
+    margin-top: var(--space-1);
+}
+
 .forecast-section .card__title {
     display: flex;
     align-items: center;

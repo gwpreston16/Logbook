@@ -13,6 +13,9 @@ use Logbook\Support\Money\Money;
  */
 final readonly class ForecastTotals
 {
+    /** *Next 3 months*: this month (with the overdue items) and the two after (Phase 44). */
+    public const int SOON_MONTHS = 3;
+
     /**
      * @param list<ForecastMonthTotal> $months one per horizon month
      */
@@ -24,6 +27,21 @@ final readonly class ForecastTotals
         /** Vehicles in this currency whose fuel cannot be estimated yet. */
         public int $fuelMissing = 0,
     ) {
+    }
+
+    /**
+     * The same figures over the first few months only, as *Next 3 months*
+     * (spec.md §7.18): calendar months like the horizon, so they are the
+     * sum of the month rows the page shows.
+     */
+    public function firstMonths(int $count): self
+    {
+        return new self($this->currency, array_slice($this->months, 0, max(0, $count)), $this->hasFuel, $this->fuelMissing);
+    }
+
+    public function soon(): self
+    {
+        return $this->firstMonths(self::SOON_MONTHS);
     }
 
     public function planned(): Money

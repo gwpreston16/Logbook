@@ -6,6 +6,37 @@ is called out explicitly.
 
 ## [Unreleased]
 
+## [3.10.0] — 2026-10-10
+
+Phase 44: **what the next three months will probably cost**, on *Coming
+up* beside the items it adds up.
+
+### Added
+- **A *Next 3 months* total on *Coming up*.** This month (overdue work
+  included) and the two after, planned and fuel together: the sum of the
+  first three months the page already lists, so it always matches the
+  table and the chart. Only the costs *Coming up* already shows (last
+  time's price, never an average); with any item of unknown cost, or a
+  shared vehicle whose costs you don't see, it reads "at least". Per
+  currency, never converted; "—" while nothing in those months has a
+  known cost. A fourth figure in the page's summary (now headed
+  *Summary*, its 12-month total labelled *Next 12 months*), and a line
+  above *Next 12 months* on the dashboard widget and the overview card.
+- **Ask's `coming_up` returns the same total** (`next_3_months`, raw
+  values and the display string), so the model quotes it rather than
+  adding anything up.
+
+### Changed
+- **`coming_up`'s `horizon_months` counts calendar months**, as the
+  page: this month and the n − 1 after. `horizon_months: 1` now ends on
+  the last day of this month rather than the same day next month, so
+  the items listed are the ones the total covers.
+
+### Upgrade notes
+- Pull and restart: no migration and no configuration change.
+- MCP and Ask clients see the new `next_3_months` key in `coming_up`;
+  existing keys are unchanged, but `horizon_end` is now a month end.
+
 ## [3.9.0] — 2026-10-10
 
 Phase 43: **the monthly briefing**. The monthly digest now covers last
@@ -2905,7 +2936,8 @@ First release: Phases 0 and 1 (foundations, accounts and garage).
   sprite (no CDN requests); base components for cards, lists, buttons, chips,
   forms, pills and alerts.
 
-[Unreleased]: https://github.com/gwpreston16/Logbook/compare/v3.9.0...HEAD
+[Unreleased]: https://github.com/gwpreston16/Logbook/compare/v3.10.0...HEAD
+[3.10.0]: https://github.com/gwpreston16/Logbook/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/gwpreston16/Logbook/compare/v3.8.0...v3.9.0
 [3.8.0]: https://github.com/gwpreston16/Logbook/compare/v3.7.2...v3.8.0
 [3.7.2]: https://github.com/gwpreston16/Logbook/compare/v3.7.1...v3.7.2

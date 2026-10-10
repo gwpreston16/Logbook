@@ -262,7 +262,8 @@ haven't signed in for 30 days, and nothing is ever drafted.
 **What it can answer.** Anything Logbook already shows: costs by period,
 category, month or vehicle; running cost per mile or km; fuel economy,
 volumes, prices and grades; maintenance records and when something was
-last done; what is coming up and what needs attention; documents and
+last done; what is coming up (with the same *Next 3 months* total as the
+*Coming up* page) and what needs attention; documents and
 their expiry; tyres and their wear; mileage; cost of ownership; and, with
 the *Trips* module, business mileage and the claim value. It does not
 know anything outside your records (prices, the weather, general advice)
