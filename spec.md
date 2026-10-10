@@ -4735,7 +4735,7 @@ nothing about reminders (§7.6). Derived on every read
 - **Horizon:** from the owner's today (in their time zone) to the last day
   of the 11th calendar month after this one: this month and the 11 after, as
   the reports' *last 12 months* (§7.7) in reverse. Only 12 months; no other
-  horizon.
+  horizon (Ask's `coming_up` may list fewer of them, §7.26).
 - **Read from the sources, not from the reminders table.** The items come
   from the same due-point calculations the reminders use (a schedule's next
   due and distance projection §7.4, a document's expiry §7.5, the tyre
