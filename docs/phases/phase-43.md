@@ -3,7 +3,7 @@
 *Last month in one message: what's due, how far you drove, what it cost,
 and what Logbook spotted.*
 
-Status: ✅ complete · release **v3.9.0** once merged · file lives in `docs/phases/`
+Status: ✅ complete · released as **v3.9.0** · file lives in `docs/phases/`
 
 The monthly digest (§7.11) lists what is due this month and, since Phase
 24, the *Check* items. This phase adds **last month**: distance, spend and
@@ -205,7 +205,7 @@ spec §7.11; the averages still look back 12 months):
       digest includes last month's figures and insights; choose what it
       includes in Settings → Reminders). No migration.
 - [x] README; `ROADMAP.md` row ✅.
-- [ ] Tag `v3.9.0` once merged.
+- [x] Tag `v3.9.0` once merged.
 
 ---
 

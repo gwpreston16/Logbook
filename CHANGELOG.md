@@ -6,15 +6,6 @@ is called out explicitly.
 
 ## [Unreleased]
 
-### Security
-- **Discord messages escape Markdown** (#378, Phase 43's security
-  review, low). Since v3.9.0 the monthly digest carries AI insight text,
-  and Discord rendered Markdown in it, so a model's
-  `[Renew here](https://…)` showed as a link that looked like Logbook's
-  own. The title, body and "…and n more" line are now escaped as
-  Mattermost's are; mentions still ping nobody, and the link to Logbook
-  still opens.
-
 ## [3.9.0] — 2026-10-10
 
 Phase 43: **the monthly briefing**. The monthly digest now covers last
@@ -39,6 +30,15 @@ month and what Logbook spotted, as well as what's due.
   as `digest_include` beside `digest`, so rolling back keeps the digest).
 - The webhook's JSON gains `last_month`, `fleet`, `issues` and `insights`
   (empty on other events); `items` and `attention` are unchanged.
+
+### Security
+- **Discord messages escape Markdown** (#378, Phase 43's security
+  review, low). The monthly digest now carries AI insight text, and
+  Discord rendered Markdown in it, so a model's
+  `[Renew here](https://…)` showed as a link that looked like Logbook's
+  own. The title, body and "…and n more" line are now escaped as
+  Mattermost's are; mentions still ping nobody, and the link to Logbook
+  still opens.
 
 ### Upgrade notes
 - Pull and restart: no migration and no configuration change.
@@ -2905,7 +2905,8 @@ First release: Phases 0 and 1 (foundations, accounts and garage).
   sprite (no CDN requests); base components for cards, lists, buttons, chips,
   forms, pills and alerts.
 
-[Unreleased]: https://github.com/gwpreston16/Logbook/compare/v3.8.0...HEAD
+[Unreleased]: https://github.com/gwpreston16/Logbook/compare/v3.9.0...HEAD
+[3.9.0]: https://github.com/gwpreston16/Logbook/compare/v3.8.0...v3.9.0
 [3.8.0]: https://github.com/gwpreston16/Logbook/compare/v3.7.2...v3.8.0
 [3.7.2]: https://github.com/gwpreston16/Logbook/compare/v3.7.1...v3.7.2
 [3.7.1]: https://github.com/gwpreston16/Logbook/compare/v3.7.0...v3.7.1
