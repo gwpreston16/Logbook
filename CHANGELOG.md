@@ -6,6 +6,110 @@ is called out explicitly.
 
 ## [Unreleased]
 
+Phase 45.2: **households and backups**. A journey through the pages for
+each person of a shared household, a sweep of everything the app answers
+or sends for what each may not see, and the golden household restored on
+every database engine and upgraded from every release since v3.0.0. The
+sweep found no leak; the restore tests found one way a restore could lose
+files.
+
+### Fixed
+- **A restore that fails part-way changes nothing.** The uploads used to
+  be swapped after the data was committed, without checking each move, so
+  a file that couldn't be moved left the restored data with files
+  missing. Now the files are swapped inside the restore's transaction:
+  any failure puts the data and the files back, and the pre-restore
+  backup stays.
+- **A restore deletes scans waiting for an entry**, as it always meant
+  to; they were left behind.
+
+### Changed
+- **The server's webhook (`WEBHOOK_URL`) gets none of the monthly
+  briefing** (#377): no *Last month* distances and no open-issue counts,
+  as well as no amounts or insights (#366). Its digest still lists the
+  reminders and *Needs attention* checks, and is not sent when there are
+  none. Members' own channels get the whole digest.
+
+### Added
+- *Practise a restore* in the deployment guide.
+- For developers: `bin/restore-matrix.sh` and `bin/upgrade-check.sh`, and
+  in CI a SQLite → PostgreSQL restore on every push, the 16-restore
+  matrix and the upgrade path nightly, and the upgrade path on every
+  release.
+
+### Documented
+- Without *Can see costs*, a figure made only of your own entries is
+  yours to see, as a station's spend and prices paid already were; any
+  figure with someone else's entry in it stays hidden (#422).
+
+### Upgrade notes (Phase 45.2)
+- Pull and restart: no migration and no configuration change.
+- A receiver of `WEBHOOK_URL`'s digest now gets `last_month` and
+  `issues` empty and `fleet` null.
+
+Phase 45.1: **proving the money**. The fixes decided while proving it
+(45.1.5 and 45.1.4), a golden household checked against an independent
+script, and the money edge cases each with a test.
+
+### Changed
+- **Cost per distance needs a mileage log that reaches back** to the
+  period's first day, or to the purchase when that is later. Without
+  one, Reports, the digest's *Last month*, Insights' *cheapest to run*
+  and Ask's `vehicle_summary` show "—" (`cost_per_km` is null) rather
+  than dividing the period's costs by part of its distance. A fleet's
+  rate leaves out a vehicle whose log doesn't reach back; its spend still
+  counts in the totals.
+- **Shown parts add up to the total shown with them.** Reports' groups,
+  vehicles and months table, the expense widgets, the cost of ownership
+  card and a vehicle's cost of ownership, and the cost of ownership and
+  true cost CSVs' total rows, never miss their total by a penny (a part
+  may move a penny, or 0.001 in a CSV total row; the months table is
+  rounded so every month and group adds up). So do the Cost of
+  ownership page's summary over its cards (a card may then differ by a
+  penny from the vehicle's own tab), its printed table, and *Coming
+  up*'s months table with its summary cards. The
+  exact sums underneath, per-entry exports, the API and MCP are
+  unchanged.
+- **Negative amounts show a true minus sign** ("−£12.34", U+2212) on
+  every page, email and display string, as the true-cost page already
+  did. CSV and API numbers keep the plain hyphen-minus.
+- **A true-cost year under 90 days owned** (a short first or last
+  year) shows no cost per distance, as *Last 12 months* already did, so
+  it has no *What changed* either (#410).
+- **A negative finance adjustment** (settling early for less than the
+  payments counted) is listed after the groups above zero, with its
+  minus sign and no share; shares are over the groups above zero.
+- **Finance in the currency's minor unit**: whole yen, 3 places for
+  dinars. The agreement, payment, quote and end forms take that many
+  decimals.
+- **A valuation or sale on the purchase day** is that day's closing
+  value, so its drop from the price falls in that period's depreciation
+  (#389, #404).
+- **The digest's *Last month* keeps a vehicle archived, sold or written
+  off during the month**, and its fleet spend says "on vehicles whose
+  costs you see" when a listed vehicle's costs are hidden.
+
+### Documented
+- The spec now says exactly what the app already did: a valuation or
+  sale is the value at the start of its day (#408); *per month* and
+  depreciation *per year* (#409); a period's depreciation per distance
+  includes the driving on the day it is measured to (#412); and a part
+  missing from one year counts as 0 in *What changed* (#413).
+
+### Upgrade notes
+- Pull and restart: no migration and no configuration change.
+- A true-cost year under 90 days owned now has `per_distance: null` and
+  `why_not: "too_short"` in the API and MCP, no `what_changed` for it or
+  the year after, and empty per-distance cells in the true-cost CSV.
+- Display strings (pages, emails, the API's `display` fields, Ask and
+  MCP) show a negative amount as "−£3.50" (U+2212) rather than "-£3.50";
+  raw API and CSV numbers are unchanged.
+- API, MCP and Ask clients may see `cost_per_km` null where it had a
+  value, for a period the mileage log doesn't reach back to; a fleet's
+  `cost_per_km` then no longer equals `total / distance_km`.
+- Finance writes through the API round amounts to the vehicle currency's
+  minor unit (whole yen, 3 places for dinars) rather than always 2.
+
 ## [3.10.0] — 2026-10-10
 
 Phase 44: **what the next three months will probably cost**, on *Coming

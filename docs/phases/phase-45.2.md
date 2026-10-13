@@ -3,7 +3,7 @@
 *Prove that a shared vehicle shows each person only what they should
 see, and that a backup really restores.*
 
-Status: 📋 planned · file lives in `docs/phases/`
+Status: 🚧 in progress (started 2026-10-12) · file lives in `docs/phases/`
 
 The access matrix checks every route against every level, one request at
 a time. What it doesn't check is a **journey**: a Log driver's month of
@@ -24,7 +24,12 @@ the data.
 Read [`CLAUDE.md`](../../CLAUDE.md) and [`spec.md`](../../spec.md) §5,
 §7.9, §7.13, §7.20, §7.21, §7.26, §7.28 and §7.30 first.
 
-**Prerequisites:** [Phase 45.1](phase-45.1.md) complete and green.
+**Prerequisites:** [Phase 45.1](phase-45.1.md) complete and green. The
+owner chose on 2026-10-12 to start 45.2 before then: 45.1 waits only on
+the owner's `expected.csv` and a week of green nightly property runs.
+Nothing here needs `expected.csv`. The restore matrix compares each
+instance's figures before and after, and checks `expected.csv`'s rows
+too once they are filled in.
 
 ---
 
@@ -74,6 +79,11 @@ For each restricted persona, render:
 - the API's list endpoints;
 - Ask's and MCP's tool results for every read tool.
 
+Carried from Phase 45.1's *hidden means hidden* property, which covers the
+services behind Reports, ownership, true cost, *Coming up*, the digest,
+finance and incidents: the fuel tab's cost per distance and segment
+costs, station stats, and the Ask tools must be in this sweep by name.
+
 Then assert that none of them contains:
 
 - an amount, unless it is on that persona's own entry;
@@ -88,34 +98,83 @@ so each scan is an exact search for them, not a guess.
 ## Tasks
 
 ### 45.2.0 Spec first
-- [ ] Open questions A–C decided by the owner and logged; §13.
+- [x] Open questions A–C decided by the owner and logged (#416–#418,
+      2026-10-12); §13.
+- [x] The carried #377, decided the same day: the server's webhook gets
+      none of the briefing (§7.11). Built here, because the leak sweep
+      covers webhook payloads (`ReminderNotifier`;
+      `MonthlyBriefingSendingTest`).
 
 ### 45.2.1 Journeys and sweep
-- [ ] The persona journeys as integration tests on every engine.
-- [ ] The leak sweep, driven by the route inventory, so a new route is
-      swept without being listed.
-- [ ] Every leak found is fixed with a regression test and noted in
-      §13.
+- [x] The persona journeys as integration tests on every engine
+      (`tests/Integration/Household/HouseholdJourneysTest`). The golden
+      household gains Jo (Manage with costs on the Golf), Vic (View with
+      costs on the EV) and Adrian (an admin with nothing), added through
+      the services after it is loaded (`tests/Support/Household/Household`),
+      so its inputs and `expected.csv` are unchanged.
+- [x] The leak sweep, driven by the router, so a new route is swept
+      without being listed (`LeakSweepTest`, `SweepUrls`): every GET route
+      of the app and the API for each vehicle, and every Ask and MCP read
+      tool for each vehicle, as Sam, Jo, Vic and Adrian; the calendar feed,
+      the digest and reminders by email and personal webhook, entry
+      webhooks and the server's webhook (`LeakSweepDeliveryTest`). Each is
+      scanned for the vehicles, amounts (lines and the app's own totals for
+      the golden rows) and other drivers' places the person may not see
+      (`LeakNeedles`); Alex, who sees everything, is the control, so a
+      needle is only searched for in a form the app prints. A placeholder
+      the sweep can't fill fails it by name. One exception, as the spec
+      asks: an admin's *Delete user* page names that user's vehicles
+      (§7.9).
+- [x] Every leak found is fixed with a regression test and noted in
+      §13. The sweep found none. A second check (`HiddenCurrencies`)
+      covers figures too small or derived to search for one by one
+      (segment costs, rates, prices): in a currency in which a person sees
+      no vehicle's costs, every amount must be one they typed. It found
+      that stations show totals of one's own fill-ups (#422, kept, §7.21
+      made exact). Giving Sam the Golf's costs behind the sweep's back
+      makes it report hundreds of leaks: the fuel tab, the API, Reports,
+      ownership, `fuel_stats`, `cost_per_distance`, the digest.
 
 ### 45.2.2 Restore matrix
-- [ ] Back up the golden household (with uploads) on SQLite, PostgreSQL,
+- [x] Back up the golden household (with uploads) on SQLite, PostgreSQL,
       MySQL and MariaDB. Restore each backup on each engine. Compare
       every table (normalised), every file's hash, every share, and every
-      row of `expected.csv`.
-- [ ] Scheduled backups, retention, and `bin/backup.php create` and
+      row of `expected.csv` (`HouseholdRestoreTest`, `InstanceSnapshot`:
+      the app's figure for all 890 golden rows before and after, and the
+      owner's filled ones once there are any). All 16 pass
+      (`bin/restore-matrix.sh`); CI runs SQLite → PostgreSQL on every push
+      and all 16 nightly (`restore-matrix.yml`, #416).
+- [x] Scheduled backups, retention, and `bin/backup.php create` and
       `restore` against the same checks.
 
 ### 45.2.3 Upgrade and failure paths
-- [ ] CI installs the previous release tag, loads the golden household,
+- [x] CI installs the previous release tag, loads the golden household,
       backs it up, restores on that tag, upgrades to `HEAD` and runs the
-      golden test.
-- [ ] Each failure leaves the data unchanged and the pre-restore backup
+      golden test (`bin/upgrade-check.sh`, `HouseholdUpgradeTest`: every
+      golden figure of the upgraded household equals the same household
+      entered on `HEAD`, with the same files and row counts). On every
+      release tag (`ci.yml`) and nightly on PostgreSQL. The one-off run
+      from every minor release since v3.0.0 (#417) passed on 2026-10-12,
+      on SQLite, and from v3.9.0 and v3.10.0 on PostgreSQL and MySQL.
+- [x] Each failure leaves the data unchanged and the pre-restore backup
       present: a truncated archive, a wrong schema version, an unknown
-      column, an unsafe file name, and a failure while swapping uploads.
+      column, an unsafe file name, and a failure while swapping uploads
+      (`HouseholdRestoreFailureTest`, on every engine). The first four
+      are found before the pre-restore backup is written, as §7.13 says
+      (there is none to keep); a table that can't be written, and a file
+      that can't be moved into place, roll back with it kept. **Found:**
+      a failed upload swap left the restored data with files missing
+      (the swap came after the commit and never checked a move). Fixed:
+      `UploadSwap` runs inside the restore's transaction and puts both
+      back; PostgreSQL's sequences are moved past the current ids again
+      after a rollback (§7.13). Also found: a restore never deleted scans
+      waiting for an entry; it does.
 
 ### 45.2.4 Docs
-- [ ] `docs/backup.md`: *Practise a restore*. Restore last week's backup
-      onto a spare container, then check the figures you know.
+- [x] *Practise a restore*: restore last week's backup onto a spare
+      container, then check the figures you know. In
+      `docs/deployment.md` § *Backups*, where backup and restore are
+      documented (there is no `docs/backup.md`).
 
 ---
 
@@ -131,21 +190,21 @@ so each scan is an exact search for them, not a guess.
 
 ## Open questions
 
-Numbered in `open-questions.md` when logged. Not built until decided.
+A–C were decided by the owner on 2026-10-12, before the phase was built.
 
 - **A. The full restore matrix on every push?** It is 16 restores.
   - (1) On every push.
   - (2) Nightly, with a SQLite → PostgreSQL pair on every push.
 
   *Recommendation:* (2). It keeps CI fast, and the nightly run catches an
-  engine-specific break within a day.
+  engine-specific break within a day. *Decided 2026-10-12:* (2). (#416)
 
 - **B. Upgrade path, from which release?**
   - (1) The previous minor release only.
   - (2) Every minor release since v3.0.
 
   *Recommendation:* (1) on every release, with (2) once now to find
-  anything already broken.
+  anything already broken. *Decided 2026-10-12:* as recommended. (#417)
 
 - **C. Sweep Ask's answers too, or only its tool results?** Answers come
   from a model, so they vary.
@@ -153,3 +212,23 @@ Numbered in `open-questions.md` when logged. Not built until decided.
   - (2) Both.
 
   *Recommendation:* (1). It tests the boundary that actually matters.
+  *Decided 2026-10-12:* (1). (#418)
+
+Found while building it:
+
+- **#419 A failed upload swap.** It left the restored data with files
+  missing. *Answered:* the code was wrong; fixed (§7.13).
+- **#420 Waiting scans after a restore.** Never deleted. *Answered:* the
+  code was wrong; fixed.
+- **#421 The pre-restore backup after a refused archive.** There is none:
+  §7.13 validates the archive before writing it. *Answered* from the
+  spec.
+- **#422 Totals of one's own entries without `ViewCosts`.** Stations show
+  them (§7.33); §7.21 said derived figures stay hidden. *Decided
+  2026-10-12:* kept; §7.21 made exact.
+
+Carried from [Phase 43](phase-43.md):
+
+- **#377 The server's webhook and the briefing.** `WEBHOOK_URL` got each
+  member's per-vehicle distances and open-issue counts. *Decided
+  2026-10-12:* it gets none of the briefing (§7.11).

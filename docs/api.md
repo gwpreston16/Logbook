@@ -100,6 +100,9 @@ user prefers, so automations can compare and chart them:
   L/100 km, km/L = 100 ÷ L/100 km; miles = km ÷ 1.609344. Or use the
   summary's `display` block, which is already in the owner's units,
   language and currency ("48,730 mi", "44.4 mpg").
+- `display` strings are for showing, not parsing: a negative amount uses
+  the true minus sign ("−£3.50", U+2212), while the raw decimal fields
+  keep a plain hyphen ("-3.500").
 - A field with no value is `null`. Codes (`fuel`, `grade`, `category`,
   `status`, …) are the app's own; `openapi.json` lists them.
 - A switched-off module's endpoints answer `404`, and its fields leave the
@@ -133,7 +136,7 @@ user prefers, so automations can compare and chart them:
 | `GET /vehicles/{id}/ownership` | cost of ownership and depreciation, as the overview's card (cost access, else `403`) |
 | `GET /vehicles/{id}/history`, `GET /history` | the history feed of one vehicle or every active one, newest first (`?kinds=fuel,expense`, `?since=` / `?until=` days, paged); amounts only where you may see them |
 | `POST /vehicles/{id}/tyres/checks` | record a tread check (read and write key) |
-| `GET /vehicles/{id}/true-cost` | true cost per km for `?period=last_12_months` (default) or `since_bought`: each part (fuel, maintenance, compliance, other, depreciation) and insurance payouts, adding up exactly, the change against the 12 months before, each calendar year and what changed from the year before, with translated sentences (cost access, else `403`) |
+| `GET /vehicles/{id}/true-cost` | true cost per km for `?period=last_12_months` (default) or `since_bought`: each part (fuel, maintenance, compliance, other, depreciation) and insurance payouts, adding up exactly, the change against the 12 months before, each calendar year and what changed from the year before, with translated sentences; a period under 90 days owned, a short first or last year included, has `per_distance: null` and `why_not: "too_short"`, and no `what_changed` (cost access, else `403`) |
 | `GET /vehicles/{id}/finance` | the active finance agreement's figures and schedule, else the latest ended one's; estimates marked as such, never the agreement number (Manage and cost access, else `404`; finance module) |
 | `GET /vehicles/{id}/finance/agreements` | every agreement, the active one first, each with its payment events and settlement quotes (as above) |
 | `POST /vehicles/{id}/reminders` | add a manual reminder (read and write key; Manage) |
@@ -142,7 +145,7 @@ user prefers, so automations can compare and chart them:
 | `POST /reminders/{id}/done`, `/dismiss`, `/reopen` | the Reminders page's buttons, for a reminder of any kind; safe to repeat (`"unchanged": true`) (read and write key; Log) |
 | `GET /attention` | *Needs attention* for every active vehicle (`?vehicle=`), in the page's order and words, each with a link to its fix; an item you can hide carries a `key` for `POST /attention/{key}/hide` |
 | `GET /reports/costs` | spend by category group, month or vehicle (`?group_by=`), per currency ([Reports](#reports)) |
-| `GET /reports/cost-per-distance` | cost per km, per vehicle and in all ([Reports](#reports)) |
+| `GET /reports/cost-per-distance` | cost per km, per vehicle and in all ([Reports](#reports)); `null` for a vehicle whose mileage log doesn't reach back to the period's start (or its purchase, when later), and the fleet's figure covers only the vehicles whose log does |
 | `GET /reports/fuel` | fuel statistics per vehicle, kind and grade, with the grade verdicts ([Reports](#reports); fuel module) |
 | `GET /reports/mileage` | distance driven in the period, and the averages ([Reports](#reports)) |
 | `GET /vehicles/{id}/trips` | trips: your own, or every driver's when you manage or own the vehicle (paged; trips module) |
@@ -638,7 +641,7 @@ OpenAPI description has every field.
 | `PUT`, `DELETE /stations/{id}/favourite` | your own | `204`, safe to repeat; unstarring removes the station's alerts |
 | `POST /fuel-prices/alerts` | your own | `station_id` (a favourite), `grade`, `below` per `volume_unit`; at most 20; an alert for that station and grade is changed (`200`, `duplicate: true`). `PATCH` changes `below` |
 | `POST /attention/{key}/hide` | Log | the `key` from `GET /attention`; `204`, safe to repeat; `404` once the item has changed. Nothing un-hides, as on the page |
-| `POST /vehicles/{id}/finance/agreements` | Manage and cost access | the agreement form; one active agreement (`409 finance_active_exists`); the agreement number is stored, never returned |
+| `POST /vehicles/{id}/finance/agreements` | Manage and cost access | the agreement form; one active agreement (`409 finance_active_exists`); the agreement number is stored, never returned; amounts are rounded to the vehicle currency's minor unit (whole yen, 3 places for dinars) |
 | `POST …/agreements/{agreement}/payments` | as above | `kind`: `missed` or `paid_late` with `due_on` (and `paid_on`), or `extra` with `amount` and `paid_on`; `DELETE …/payments/{event}` |
 | `POST …/agreements/{agreement}/quotes` | as above | `quoted_on`, `amount`, `valid_until`, `notes`; `DELETE …/quotes/{quote}` |
 | `POST …/agreements/{agreement}/end` | as above | `outcome`, `ended_on`, `settlement`, `excess_charge`, `damage_charge`; the vehicle stays. Selling or handing it back goes through `…/archive` |

@@ -55,7 +55,23 @@ final class ValueCurveTest extends TestCase
             $sum = Decimal::add($sum, $loss->amount->toDecimal(6));
         }
 
-        self::assertEqualsWithDelta(5200.0, (float) $sum, 0.000002, 'no day lost between 31 Dec and 1 Jan');
+        self::assertSame('5200.000000', $sum, 'no day lost between 31 Dec and 1 Jan, and nothing lost to rounding');
+    }
+
+    public function testAdjacentPeriodsAddUpExactlyWhenTheValuesAreRecurring(): void
+    {
+        // £100 to £0 over 3 days: each day loses £33.33… The values are rounded once,
+        // so the days lose 33.333333, 33.333334 and 33.333333 (Phase 45.1, a property-test find).
+        $curve = ValueCurve::of(self::vehicle('2023-01-01', '100.000'), [self::valuation('2023-01-04', '0.000')]);
+
+        $sum = '0';
+        foreach (['2023-01-01', '2023-01-02', '2023-01-03'] as $day) {
+            $loss = $curve->depreciation(self::date($day), self::date($day), 'GBP');
+            self::assertNotNull($loss);
+            $sum = Decimal::add($sum, $loss->amount->toDecimal(6));
+        }
+
+        self::assertSame('100.000000', $sum);
     }
 
     public function testAPeriodPastTheLatestPointStopsThereAndSaysSo(): void
@@ -136,6 +152,67 @@ final class ValueCurveTest extends TestCase
 
         self::assertCount(2, $curve->points);
         self::assertSame('12000.000', self::value($curve, self::date('2024-03-01')));
+    }
+
+    public function testAValuationOnThePurchaseDayIsThatDaysClosingValue(): void
+    {
+        // The Focus (#389): £6,450 on 20 Sep 2023, valued £6,200 the same day.
+        $focus = self::vehicle('2023-09-20', '6450.000');
+        $valuations = [self::valuation('2023-09-20', '6200.000'), self::valuation('2026-03-01', '3150.000', 2)];
+        $curve = ValueCurve::of($focus, $valuations);
+
+        self::assertSame('6450.000', self::value($curve, self::date('2023-09-20')), 'the day opens at the price');
+        self::assertSame('6200.000', self::value($curve, self::date('2023-09-21')), 'and closes at the valuation');
+
+        $year = $curve->depreciation(self::date('2023-01-01'), self::date('2023-12-31'), 'GBP');
+        self::assertNotNull($year);
+        self::assertSame('2023-09-20', $year->from->format('Y-m-d'));
+        $day = $curve->depreciation(self::date('2023-09-20'), self::date('2023-09-20'), 'GBP');
+        self::assertNotNull($day);
+        self::assertSame('250.000', $day->amount->toDecimal(3), 'the drop falls on the purchase day');
+
+        $sum = '0';
+        foreach (['2023', '2024', '2025', '2026'] as $y) {
+            $loss = $curve->depreciation(self::date($y . '-01-01'), self::date($y . '-12-31'), 'GBP');
+            self::assertNotNull($loss);
+            $sum = Decimal::add($sum, $loss->amount->toDecimal(3));
+        }
+        self::assertSame('3300.000', $sum, 'the years add up to Since bought: 6,450 − 3,150');
+    }
+
+    public function testAPurchaseDayValuationAloneIsMeasuredToThePurchaseDay(): void
+    {
+        $curve = ValueCurve::of(self::vehicle('2023-09-20', '6450.000'), [self::valuation('2023-09-20', '6200.000')]);
+
+        $year = $curve->depreciation(self::date('2023-01-01'), self::date('2023-12-31'), 'GBP');
+
+        self::assertNotNull($year);
+        self::assertSame('250.000', $year->amount->toDecimal(3));
+        self::assertTrue($year->cutAtEnd);
+        self::assertSame('2023-09-20', $year->to->format('Y-m-d'), 'labelled with the valuation\'s own date');
+        self::assertNull($curve->depreciation(self::date('2024-01-01'), self::date('2024-12-31'), 'GBP'));
+    }
+
+    public function testASaleOnThePurchaseDayIsThatDaysClosingValue(): void
+    {
+        // #404: as a purchase-day valuation.
+        $flipped = self::vehicle('2024-05-04', '8000.000', '2024-05-04', '7600.000');
+
+        $loss = ValueCurve::of($flipped, [])->depreciation(self::date('2024-05-01'), self::date('2024-05-31'), 'GBP');
+
+        self::assertNotNull($loss);
+        self::assertSame('400.000', $loss->amount->toDecimal(3));
+        self::assertSame('2024-05-04', $loss->to->format('Y-m-d'));
+    }
+
+    public function testAPointDatedTheDayAfterThePurchaseOutranksThePurchaseDaysClose(): void
+    {
+        $car = self::vehicle('2023-09-20', '6450.000');
+        $valuations = [self::valuation('2023-09-20', '6200.000'), self::valuation('2023-09-21', '6100.000', 2)];
+        $curve = ValueCurve::of($car, $valuations);
+
+        self::assertSame('6450.000', self::value($curve, self::date('2023-09-20')));
+        self::assertSame('6100.000', self::value($curve, self::date('2023-09-21')));
     }
 
     private static function value(ValueCurve $curve, DateTimeImmutable $day): ?string

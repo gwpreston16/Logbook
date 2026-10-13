@@ -1497,7 +1497,9 @@ from fleet totals unless "include archived" is toggled.
     price of 0 shows the amount without a percentage.
   - **Per year** = the loss ÷ the years from the purchase date to the
     **value's date** (not today: that is when the value was true), counted
-    in calendar years, months and days. **Per distance** = the loss ÷ the
+    in calendar years, months and days: the loss × 12 ÷ (the whole
+    calendar months between the dates + the days left over ÷ 30.436875,
+    the average month of 365.2425 ÷ 12 days) (#409, decided 2026-10-12). **Per distance** = the loss ÷ the
     distance driven between the same two dates, measured as a report's
     *distance driven* (§7.7), in the owner's distance unit ("£0.14/mi").
     Both need the purchase date and are shown only when the two dates are at
@@ -1512,7 +1514,16 @@ from fleet totals unless "include archived" is toggled.
     the lifetime figures above are unchanged): the value on any day
     between two points of the value series is interpolated in a straight
     line by day, and a period's depreciation is the value at its start
-    minus the value at its end (a gain is negative). Nothing is
+    minus the value at its end (a gain is negative). A value point is the
+    value at the **start** of its day, so a period ending on 31 Dec is
+    measured to the start of 1 Jan, the next period's start, and a
+    valuation dated D counts no loss on D itself (Phase 45.1, #408, decided
+    2026-10-12). Several points on
+    one day: the last one counts, except that the purchase day opens at
+    the purchase price, so a valuation (or a sale, #404) dated on the purchase day is
+    that day's closing value and the drop from the price falls in the period
+    holding the purchase day: the periods' depreciation always adds up to
+    *Since bought* (Phase 45.1, #389, decided 2026-10-11). Nothing is
     extrapolated: a period is cut to the first and latest points and
     labelled with the date it is measured to, and a period wholly outside
     them has none (§7.35).
@@ -2197,12 +2208,24 @@ browser (§8 *Printing reports*; server-side PDF is future work, §12).
 
 - **Cost ledger.** Every cost is one line with a vehicle, a calendar date, a
   group and an amount in the vehicle's currency: each fill-up (group *fuel*,
-  dated on the day it happened in the owner's time zone — a fill at 00:30
-  BST on 1 April counts in April), each maintenance entry and document with
+  dated on the day it happened in the viewing user's time zone — a fill at
+  00:30 BST on 1 April counts in April; on a shared vehicle each user's
+  months follow their own clock, as §7.21 shows them its times, while
+  finance and reminders keep the vehicle owner's (§7.32, §7.3; #386,
+  decided 2026-10-11), each maintenance entry and document with
   a cost above 0 (*maintenance*, *documents*; a document is dated by its
   start date, else the day it was added), and each ad-hoc expense (*other*,
   zero included, since the owner logged it deliberately). Sums are exact
-  (integer micro-units, never floats).
+  (integer micro-units, never floats). **The one negative line** is a
+  finance agreement's end *Adjustment* (§7.32), when settling early cost
+  less than the payments counted so far: it is kept, not clamped (#387,
+  decided 2026-10-11). So a group, a month or a period total can be
+  negative; it shows with a minus sign ("−£37.78"), and so does a cost
+  per distance worked out from it. Shares of a total (the Reports
+  breakdown, §7.8's *Expense breakdown*) are taken over the groups above
+  zero only; a group below zero is listed after them with its amount and
+  no share. Insurance payouts are not ledger lines: they are taken off
+  cost of ownership and true cost (below, §7.35), never the ledger.
 - **Tyre costs are maintenance costs** (Phase 11.1): a tyre change has no
   cost of its own; what was paid is on the `tyres` service record it is
   linked to (§7.17), so it is counted once, under *maintenance*. There is no
@@ -2223,7 +2246,7 @@ browser (§8 *Printing reports*; server-side PDF is future work, §12).
   month (table plus stacked bar chart) and, for the fleet, spend per vehicle
   with its own cost per distance. All filters are a plain GET form, so a
   report is a bookmarkable URL and works without JS.
-- **Months** are calendar months in the owner's time zone; every month in the
+- **Months** are calendar months in the viewing user's time zone (#386); every month in the
   period is listed, including months with nothing spent. Average per month
   divides by the number of months in the period (the current month counts);
   for *all time* the period starts at the earliest cost.
@@ -2237,7 +2260,15 @@ browser (§8 *Printing reports*; server-side PDF is future work, §12).
   towards the fleet's distance (miles from a vehicle whose costs were never
   logged would make the fleet look cheaper to run than any of its vehicles).
   Cost per distance = spend ÷ distance, shown only when some distance was
-  driven.
+  driven **and the mileage log reaches back** to the period's first day, or
+  to the vehicle's purchase date when that is later (its first cost without
+  one; Phase 45.1, #405, decided 2026-10-12), with a reading on or before
+  it, as cost of ownership requires below; otherwise
+  "—", since the period's costs would be divided by part of its distance
+  (Phase 45.1, #376, decided 2026-10-11). For the fleet (#398), the same holds
+  per vehicle: a vehicle whose log doesn't reach back adds neither its
+  spend nor its distance to the fleet's cost per distance (its spend still
+  counts in the totals).
 - **Archived vehicles** are left out of fleet reports unless
   `include_archived=1` is ticked; picking one explicitly always includes it.
 - **Costs filter** (Phase 26.2): `group=fuel|maintenance|compliance|other`
@@ -2283,7 +2314,7 @@ costs plus what it has lost in value (§7.1 *Depreciation*). Derived on every
 read (`Service\Report\OwnershipCost`), never stored, in the vehicle's
 currency and never converted.
 
-- **The ownership period** (calendar dates in the owner's time zone, both
+- **The ownership period** (calendar dates in the viewing user's time zone, #386, both
   inclusive) **starts** on the purchase date; without one, at the earlier of
   the vehicle's first ledger line and first odometer reading, and says so
   ("Since first logged, 4 May 2024"). It **ends** on the sale date when one
@@ -2330,7 +2361,8 @@ currency and never converted.
     (nothing logged is not nothing spent, and a rate of £0 would be made
     up); the totals still show.
   - Under 90 days owned: no per-distance or per-month figure (too short to
-    mean anything); the totals still show.
+    mean anything); the totals still show. True cost's periods follow the
+    same rule, a short first or last calendar year included (§7.35, #410).
   - Depreciation per distance unknown (no price or value, no purchase
     date, or the value under 90 days after the purchase, §7.1; a gain is a
     negative part from Phase 32):
@@ -2397,7 +2429,8 @@ currency and never converted.
       purchase"; a vehicle without a total adds its running costs and the
       card says "2 of 3 with depreciation";
     - *Per month*: the **active** vehicles' own *per month* figures added
-      up (each vehicle's total ÷ its own owned months, as the table),
+      up (each vehicle's §7.7 *Per month*: running costs ÷ months owned +
+      depreciation per year ÷ 12, as the table, #409),
       "active vehicles combined"; sold or archived vehicles count in
       *Total cost* but not here (#187); "—" with no active vehicle;
     - *Depreciation*: the sum of the vehicles' depreciation, "{n}% of
@@ -2564,7 +2597,7 @@ toggles.
   insights*).
 - **Mileage** (id `mileage`): *This month*, *This year* and *Monthly avg* in
   the owner's distance unit. This month / this year are the calendar month /
-  year to date in the owner's time zone, measured as a report's *distance
+  year to date in the viewing user's time zone (#386), measured as a report's *distance
   driven* (§7.7); monthly average is the Mileage tab's figure (§7.2). For
   the fleet each figure is computed per vehicle and summed (readings of
   different vehicles are never subtracted from each other). A figure with no
@@ -2607,8 +2640,9 @@ toggles.
     then one row per group with spending in **Reports' own order and
     labels** (§7.7), with its amount and its share of the total. Shares are
     whole percentages rounded by the largest-remainder method, so they add
-    up to exactly 100%. Costs are never negative (§7.7), so neither is a
-    group.
+    up to exactly 100% over the groups above zero. A group can be
+    negative only from a finance end adjustment (§7.7, #387): it is listed
+    after them with its amount and no share, and has no segment in the bar.
   - **A bar** of the groups' shares above the rows, drawn with CSS (no
     chart library) in the groups' colour tokens, each at least 3:1
     against the card in both themes (#242: the light theme's *Tax* and
@@ -3258,8 +3292,9 @@ Extensible channel interface so more can be added.
   (a reminder carries none; *Coming up* costs are not sent). From Phase
   43 the monthly digest carries last month's spend and cost per distance
   to recipients with `ViewCosts`, through their own channels only: the
-  server's webhook (`WEBHOOK_URL`) gets the digest without amounts or
-  insights (#366, *The monthly briefing*).
+  server's webhook (`WEBHOOK_URL`) gets the digest without its briefing:
+  no amounts, insights, distances or open issues (#366, #377, *The
+  monthly briefing*).
 - **Channels per user** (Phase 19, Phase 36.2): email goes to the user's
   confirmed address (Phase 33.1, §6 User `email`, set on Profile; the
   *Default recipient for admins*, Settings → Delivery, is the default for
@@ -3317,9 +3352,11 @@ Extensible channel interface so more can be added.
     vehicles (#371); (3) **Last month**; (4) **Insights**;
     (5) the link.
   - **Last month** (while the reports module is on, #368): the previous
-    calendar month in the user's time zone, for each active recipient
-    vehicle with a distance or (with `ViewCosts`) a spend in that month
-    (#369);
+    calendar month in the user's time zone, for each recipient vehicle
+    that was active for at least part of that month (one archived, sold
+    or written off during it still counts, so the month keeps its spend;
+    #374, decided 2026-10-11) with a distance or (with `ViewCosts`) a
+    spend in that month (#369);
     the averages still look back over the 12 months before it:
     - *Distance*: the month's distance driven (§7.7, `PeriodDistance`),
       against the average of the 12 months before it, each measured the
@@ -3334,12 +3371,17 @@ Extensible channel interface so more can be added.
       is left out. When one ledger line is more than half of the month's
       spend, it is named by its kind as listed (no change of case, which some languages need): "£604 spent, including Insurance £412".
     - *Cost per distance* (`ViewCosts` only): the month's spend ÷ its
-      distance, only when that distance is at least 100 km (as §7.35);
-      otherwise "—". Its average is the 12 months' spend ÷ their distance
-      (a ratio of totals, as the Reports page gives for that range), with
-      the same 100 km floor.
+      distance, only when that distance is at least 100 km (as §7.35)
+      and the mileage log reaches back to the month's first day (§7.7,
+      #376); otherwise "—". Its average is the 12 months' spend ÷ their
+      distance (a ratio of totals, as the Reports page gives for that
+      range), with the same 100 km floor, and only when the log reaches
+      back to the first of those 12 months (#376, #399, decided 2026-10-11);
+      otherwise the comparison is left out.
     - *Fleet line* (two or more vehicles listed): distance summed; spend
-      summed **per currency**, never converted.
+      summed **per currency**, never converted. When any listed vehicle's
+      costs are hidden from the recipient, the spend is labelled "spend on
+      vehicles whose costs you see" (#375, decided 2026-10-11).
     - *Nothing spent* (#367): a month with a distance and no spending
       reads "nothing spent", with no comparison, and its cost per
       distance is "—" (null in the JSON).
@@ -3385,9 +3427,13 @@ Extensible channel interface so more can be added.
     them.
   - **The server's webhook** (#366): `WEBHOOK_URL` is an admin's endpoint
     that receives every member's notifications, so its copy of the digest
-    leaves out spend, cost per distance and insights (text and JSON);
-    distances and open issues stay. Each member's own channels, personal
-    webhooks included, get the whole digest.
+    leaves out the whole briefing (text and JSON): spend, cost per
+    distance and insights (#366), and *Last month*'s distances and the
+    open issues (#377, decided 2026-10-12); `last_month`, `fleet`,
+    `issues` and `insights` are empty (`fleet` null). The reminders and the *Needs
+    attention* checks stay, as on the other notifications it receives,
+    and with neither there is nothing to send it. Each member's own
+    channels, personal webhooks included, get the whole digest.
   - **Webhook JSON**: beside `items` and `attention` (unchanged), every
     event carries `last_month`, `fleet`, `issues` and `insights` (empty
     except on the digest): `last_month` is a list per vehicle of
@@ -4085,9 +4131,15 @@ vehicles; a disabled module cannot be imported).
   automatic backup of the current data is written to `BACKUP_PATH`
   (`pre-restore-<timestamp>.zip`), then every table is emptied and refilled
   in one transaction (PostgreSQL id sequences are moved past the restored
-  ids: the one documented platform branch), then the uploads directory is
-  swapped for the archive's files. Every session ends (sign in again with
-  the restored account's password).
+  ids: the one documented platform branch), and the uploads directory is
+  swapped for the archive's files before that transaction commits: the
+  current files are moved aside, the archive's moved in, and the ones set
+  aside deleted only once the data is committed. If anything fails on the
+  way (a table, a file that can't be moved), the transaction rolls back,
+  the files are put back as they were and the sequences moved past the
+  current ids again: nothing has changed, and the pre-restore backup stays
+  (Phase 45.2). Every session ends (sign in again with the restored
+  account's password).
 - A backup from another app version with a different schema is refused with
   a clear message: restore it with the matching version, then upgrade.
   (Every release that adds a column moves the schema version, e.g. Phase
@@ -5674,7 +5726,11 @@ part of View.
   they see the amounts they typed (row amounts through `can_see_amount()`,
   and in the API). Figures derived from several entries (cost per
   distance, totals, price trends, an economy segment's cost) stay hidden
-  even when some are theirs. Forms still take costs, since a driver pays
+  when any of those entries is someone else's, even when some are
+  theirs. A figure made only of their own entries is theirs to see: a
+  station's spend and average and cheapest price paid count only their
+  own fill-ups (§7.33), while its visits count all they can see (#422,
+  decided 2026-10-12). Forms still take costs, since a driver pays
   at the pump. The Expenses tab (`View`) lists the vehicle's ad-hoc
   expenses without their amounts (their own excepted) and no totals or
   chart; the API's expenses list still needs `ViewCosts`. CSV exports need
@@ -7528,7 +7584,10 @@ flow, are out of scope (#121; a refinance is entered as a new loan).
   - *Lease:* lessor, initial rental, number of monthly rentals after it,
     first rental date, regular rental, fees, annual mileage, excess
     charge, start odometer.
-  - Amounts accept 2 decimals, 0 is valid; the APR 3 decimals, 0 valid;
+  - Amounts accept the vehicle currency's minor unit in decimals (2 for
+    GBP and EUR, 0 for JPY, 3 for BHD; `intl` fraction digits), 0 is
+    valid (Phase 45.1, #390, decided 2026-10-11: until then always 2);
+    the APR 3 decimals, 0 valid;
     the excess charge 4 decimals (in the vehicle's currency per mile or
     km).
   - **Consistency check** (a warning, never blocking): when the total
@@ -7559,7 +7618,8 @@ flow, are out of scope (#121; a refinance is entered as a new loan).
   schedule.
 - **Figures** (`Service\Finance\AgreementFigures`; decimal arithmetic, no
   floats for money; the monthly rate is (1 + APR)^(1/12) − 1 to 10
-  decimal places), each labelled:
+  decimal places; every amount is rounded, half away from zero, to the
+  agreement currency's minor unit, #390), each labelled:
   - *Payments made* and *Payments remaining* ("18 of 48 remaining"), the
     final payment counted separately ("plus the optional final payment of
     £9,450" for PCP).
@@ -7718,7 +7778,8 @@ flow, are out of scope (#121; a refinance is entered as a new loan).
       the first payment, the option-to-purchase fee with the final one).
       Once the agreement has ended, the lines are adjusted so their total
       equals the exact cost of credit, the difference falling on the end
-      date.
+      date. That *Adjustment* line is negative when settling cost less
+      than the lines counted so far, and is kept so (§7.7, #387).
     - Leases: the initial rental, every rental and the fees on their
       dates.
   - They count in Reports, the Expenses tab's totals, ownership and cost
@@ -8252,9 +8313,12 @@ it replaces none of the other figures.
   folded into a part.
 - **Periods:** *Since bought* (§7.7's ownership period, unchanged), *Last
   12 months* (the reports' preset: this month and the 11 before, cut to the
-  ownership period; under 90 days, no per-distance figure, as §7.7), and
+  ownership period), and
   the 12 months before it for the change, and each **calendar year** in
-  the owner's time zone
+  the viewing user's time zone (#386); any period under 90 days once cut
+  to the ownership period, a first or last year included, has no
+  per-distance figure, as §7.7 (#410, decided 2026-10-12), so it has no
+  *What changed* either
   (calendar years only; UK tax years are parked, #150). The current year
   and the first year of ownership are partial and say so ("2026 so far",
   "2023 from 14 Mar"); so is the year of a sale ("2026 to 12 Mar").
@@ -8269,7 +8333,9 @@ it replaces none of the other figures.
   exactly as §7.7 does.
 - **Per distance** for a period = each part's amount ÷ the period's
   distance driven (§7.7), the depreciation part ÷ the distance driven up to
-  the date it is measured to (below). Rates are kept per km to 6 places:
+  the date it is measured to, that day's driving included, even though a
+  value point is the value at the start of its day (#412, decided
+  2026-10-12) (below). Rates are kept per km to 6 places:
   the running parts and the payouts are shared out (largest remainder) so
   they add up exactly to the running rate, and the depreciation rate is
   added to it, so the parts always add up exactly to the total. Shown in
@@ -8284,9 +8350,16 @@ it replaces none of the other figures.
   `Service\Report\ValueCurve`):
   - the vehicle's **value points** are §7.1's value series: the purchase
     price on the purchase date, each valuation on its date, and the sale
-    price on the sale date (several on one day: the last one counts);
+    price on the sale date, each the value at the start of its day (#408)
+    (several on one day: the last one counts,
+    except that the purchase day opens at the price, so a valuation or a sale
+    that day is its closing value, #389, #404);
   - the value on any day between two points is interpolated in a straight
-    line by day;
+    line by day, and rounded to the micro-unit (half up) before anything is
+    subtracted from it, so adjacent periods' depreciation adds up exactly
+    to the depreciation over both (Phase 45.1, #402: until then each
+    period's loss was rounded after subtracting, and the years could miss
+    *Since bought* by a micro-unit);
   - a period's depreciation = value at its start − value at its end; a
     gain is negative, as in §7.7, and is shown as a negative part in every
     period, *Since bought* included (#154);
@@ -8347,7 +8420,9 @@ it replaces none of the other figures.
     consumption = units bought ÷ distance driven, so price × consumption is
     the energy's cost per distance and the pair sums exactly to its change.
     An energy bought in only one of the two years is one line, its change
-    per distance;
+    per distance; likewise a part missing from one year (no depreciation
+    after the latest value point) counts as 0 there, so the parts always
+    add up to the total change (#413, decided 2026-10-12);
   - **distance:** for the fixed-cost parts (documents and depreciation,
     always treated as time-based, #151), the change caused by driving a
     different distance with the same amount, shown as its own line
@@ -8993,6 +9068,88 @@ overview while any test is unreviewed. A test is reviewed
   `DateTimeImmutable`, explicit tests. (Primary defence against wrong totals.)
 - **Decimal precision:** ≥3 decimals for fuel price/volume.
 - **Validation:** clear errors; never reject legitimate edge values.
+- **Money edge cases** (Phase 45.1, decided by the owner 2026-10-11,
+  #386–#392 and #398–#400; each has a test, and the answer is the owner's, not the
+  code's):
+  - **Rounding:** amounts are summed exactly (integer micro-units) and
+    rounded **once**, at display or export, half away from zero, to the
+    currency's minor unit (0 for JPY, 2 for GBP and EUR, 3 for BHD);
+    claim lines and finance amounts are rounded per line to the same
+    unit (§7.23, §7.32, #390). Nothing else rounds before it sums.
+  - **Shown parts add up** (#403, decided 2026-10-11): amounts are entered
+    to 3 decimals in every currency (£1.005), so parts rounded one by one
+    can miss their total by a minor unit. Wherever a total is shown with
+    its parts (Reports' groups, months and vehicles; the cost of ownership
+    card; true cost's parts and payouts, §7.35; the expense widgets, §7.8;
+    the CSV totals), the shown parts are rounded to the minor unit by the
+    largest-remainder method, as true cost's rates per distance already
+    are, so they always add up to the shown total. The exact sums
+    underneath are unchanged. Reports' months × groups table is a grid,
+    which largest remainder can't make add up both ways: it is rounded
+    under control (#406, decided 2026-10-12), each cell up or down a unit
+    at most, so every month adds up to its total, every group column to
+    the group's amount (the same as *By group* shows) and those to the
+    grand total; a cell that is already a whole minor unit, zero included,
+    never moves. A vehicle's cost of ownership adds up at each level
+    (groups and payouts to its running costs, running costs and
+    depreciation to its total, and the same per month). Three more
+    places follow (#407, decided 2026-10-12, option (a)): the Cost of
+    ownership page's summary total over its cards, whose shown totals are
+    shared out from it by largest remainder (so a card's total can differ
+    by a minor unit from the same vehicle's own tab), and its parts then
+    from the card's shown total; the ownership report's print table,
+    vehicles × (running costs, depreciation), rounded under control so each
+    row adds up to its total and each column to the fleet footer (a
+    footer total over only some vehicles adds up their shown totals); and
+    *Coming up*'s months × (planned, fuel) table, rounded under control,
+    with the summary cards, *Next 3 months*, each month's fuel line and
+    the dashboard's *Coming up* lines showing the same amounts as the
+    table (the API and Ask stay exact). A CSV's total
+    rows (cost of ownership, true cost) keep the 3 places a CSV writes,
+    and their parts add up at those places; per-entry rows, the API and
+    MCP stay exact (`Support\Money\ShownAmounts`).
+  - **Cost 0:** a £0 fill-up or ad-hoc expense is a ledger line and
+    counts in every total and count; a £0 service or document is not a
+    ledger line (§7.7). A period whose only costs are £0 lines shows a
+    £0.00 rate, not "—".
+  - **No distance:** zero distance, no reading or one reading gives no
+    per-distance figure ("—"); a backwards reading inside a period is
+    ignored (only the end points count), and a period whose end is below
+    its start gives "—". Per-distance figures also need the log to reach
+    back to the period's start, or the purchase when later (§7.7, #376,
+    #405).
+  - **Valuations:** two on one day, the last added wins (for the
+    current value and the curve); one on the purchase day (or a sale that day,
+    #404) is that day's closing value, after the price (§7.1, #389). A sale is the
+    value whatever the last valuation; a sale above it is a negative
+    depreciation part in that period; a sale above the price is a gain:
+    a negative per-distance part and no per-year figure.
+  - **Finance:** settled early, later payments leave the schedule and
+    the end *Adjustment* may be negative (#387); a missed payment is
+    owed now, makes no cost line and leaves the interest shares as
+    scheduled (an estimate); a 0% agreement has no interest lines and
+    its settlement is the sum owed; a balloon refinanced is the final
+    payment paid on its date, the agreement ended, and a new loan added.
+  - **Negative amounts:** only the finance *Adjustment* is a negative
+    ledger line; insurance payouts reduce cost of ownership and true
+    cost. A payout or adjustment larger than the period's spend gives a
+    negative total, shown with a minus sign, and so does its
+    per-distance figure (#387, #400). The sign is the true minus, U+2212
+    ("−£12.34"), on every page, email and display string (#414, decided
+    2026-10-12); CSV and API numbers keep the ASCII hyphen-minus; only the incident card shows its
+    own net as 0 (§7.29). There are no refunds (§12, #388).
+  - **Plug-in hybrids:** litres and kWh are separate economy series,
+    each measured over the odometer distance between its own full
+    fills; both count in *Fuel* for cost and cost per distance.
+  - **Tax years:** a trip on 5 April is in the old UK tax year and one
+    on 6 April in the new; a rate change mid-year keeps the year's
+    running total.
+  - **Time zones:** a timed entry (fill-up, reading) is in the month of
+    its local date in the **viewing** user's zone, whatever the
+    server's (#386); calendar-date entries never shift; finance and
+    reminders follow the vehicle owner's zone.
+  - **Currencies:** no figure ever adds two currencies; totals are per
+    currency.
 - **Page budgets** (Phase 41.7, decided 2026-10-09, #350): the dashboard
   and a vehicle's overview (and, from Phase 42, the Insights page, #280)
   run a bounded number of queries, **not one per
@@ -9453,6 +9610,9 @@ Real environment variables override `.env`; an empty value counts as unset.
 
 ## 12. Future / optional (not in core phases)
 
+- Refunds (Phase 45.1, #388): a negative expense or fill-up amount for
+  money given back; today every form takes 0 or more, and money returned
+  is an insurance payout (§7.29) or a finance adjustment (§7.32).
 - Notification channels (Phase 36.3, #241): Matrix, Signal, and a
   bridge such as Apprise, each a definition and a sender; a shared
   Telegram bot or Pushover application provided by the admin (#236).
@@ -10098,6 +10258,51 @@ task breakdowns live in the per-phase files; this is the map.
   it, and its `horizon_months` counts calendar months as the page does
   (#379–#383). No migration. Release v3.10.0. See
   [`phase-44.md`](docs/phases/phase-44.md).
+- **Phase 45.1 — Hardening: proving the money.** A golden household
+  (two users, four vehicles over three years, loaded through the
+  services) whose expected figures come from the owner's spreadsheet,
+  with finance and depreciation also from an independent script
+  (#393); a golden test to the penny on every engine; seeded property
+  tests for the ledger's invariants, with no library (#394); the money
+  edge-case catalogue in §8 (#386–#392); and the fixes it decided:
+  readings must reach back for Reports' and the digest's cost per
+  distance (#376), the digest keeps vehicles archived during the month
+  (#374) and labels a fleet spend with hidden costs (#375), negative
+  finance adjustments shown as such (#387), the purchase-day valuation
+  (#389, and a sale that day, #404), finance in the currency's minor
+  unit (#390), the reach-back from the purchase when later (#405), and
+  shown parts that add up to their total by largest remainder, Reports'
+  months table by controlled rounding (#403, #406), and the same for the
+  Cost of ownership summary, its print table and *Coming up*'s table
+  (#407). An independent script (Python, sharing no code with `src/`)
+  works out finance and depreciation too; comparing it with the app made
+  the spec exact on a valuation's moment in its day (#408), per month
+  (#409), a sale day's distance (#412) and *What changed* by part (#413),
+  and gave a short year no rate (#410); the edge-case catalogue's tests
+  gave every negative amount the true minus sign (#414). Eight seeded
+  property tests, fixed seeds on every push and fresh ones nightly
+  (`properties.yml`), found the depreciation rounding fixed as #402. See
+  [`phase-45.1.md`](docs/phases/phase-45.1.md).
+- **Phase 45.2 — Hardening: households and backups.** Journey tests per
+  persona and a leak sweep of every GET route as each restricted
+  persona; a restore matrix across engines, the upgrade path from the
+  last release, and a restore drill. The sweep covers every GET route
+  and API call, every Ask and MCP read tool, the calendar feed, the
+  digest, reminders and webhooks, and found no leak; the server's
+  webhook now gets none of the briefing (#377), and §7.21 says exactly
+  that a total of one's own entries is theirs to see (#422). The 16 restores and the
+  upgrade from every minor release since v3.0.0 reproduce the golden
+  household; the failure paths found that a failed upload swap left the
+  restored data with files missing, so the swap now runs inside the
+  restore's transaction and either failure puts both back (§7.13).
+  Decided: the full matrix nightly with a SQLite → PostgreSQL pair on
+  every push (#416), the upgrade path from the previous minor release on
+  every release (#417), Ask's tool results swept rather than its answers
+  (#418). See [`phase-45.2.md`](docs/phases/phase-45.2.md).
+- **Phase 45.3 — Hardening: phones and real people + release.** Mobile
+  journeys in WebKit and Chromium, a real-device pass, usability
+  sessions with newcomers, the hardening report and the release. See
+  [`phase-45.3.md`](docs/phases/phase-45.3.md).
 ---
 
 ## 14. Definition of done

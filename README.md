@@ -189,6 +189,7 @@ composer install
 composer start               # http://localhost:8090 (PHP built-in server, SQLite by default)
 composer test                # PHPUnit (TEST_DB_*; SQLite by default)
 composer test:coverage       # PHPUnit with line coverage (needs pcov or Xdebug) → var/coverage/
+composer test:properties     # the money property tests; PROPERTY_SEEDS=1,2,3 replays seeds
 composer coverage:check      # overall coverage against tests/coverage-floor.txt (CI also checks 80% of a PR's changed lines)
 composer lint                # phpcs, PSR-12
 composer analyse             # PHPStan, level max
@@ -257,6 +258,8 @@ Other tasks run inside the app container:
 ```bash
 docker compose -f docker-compose.dev.yml exec app composer check   # lint + analyse + test
 bin/test-all-dbs.sh                                                 # suite on SQLite, Postgres, MySQL, MariaDB
+bin/restore-matrix.sh                                               # golden household backed up on each engine, restored on every one
+bin/upgrade-check.sh [v3.9.0 …]                                     # golden household from an older release, upgraded (default: the previous minor)
 bin/smoke-test.sh pgsql                                             # production image end-to-end (after docker build -t logbook:local .)
 ```
 
