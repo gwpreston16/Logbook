@@ -97,7 +97,7 @@ choice), §7.27 (*Numbers* read in the user's locale), and
 ### Release
 
 - [x] VERSION 3.21.4, CHANGELOG 3.21.4, README status (#586).
-- [ ] Tag `v3.21.4` once merged.
+- [x] Tag `v3.21.4` once merged.
 
 ## Acceptance criteria
 
