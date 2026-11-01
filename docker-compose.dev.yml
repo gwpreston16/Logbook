@@ -56,7 +56,7 @@ services:
       retries: 20
 
   pgsql:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment: *db-env
     volumes:
       - ./docker/dev/pgsql-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
