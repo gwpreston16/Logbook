@@ -197,14 +197,20 @@ v3.21.11.
 
 ### 54.16.3 Test runs that queue (K197)
 
-- [ ] `tests/Support/TestRunLock.php`: takes `flock(LOCK_EX)` on
+- [x] `tests/Support/TestRunLock.php`: takes `flock(LOCK_EX)` on
       `var/testing.lock`, printing the #619 message to STDERR once if it
       has to wait, and keeps the handle for the process's life.
       `tests/bootstrap.php` calls it before the SQLite file is deleted.
-- [ ] `TestRunLockTest`: while the test holds the lock, a `proc_open`
+      *Built:* after the K148 and K156 refusals, which only read settings:
+      taken first, it deadlocked `TestBootstrapTest`, whose child run of
+      the bootstrap waited on its parent's lock. `composer test` also
+      gets `Composer\Config::disableProcessTimeout` (as `test:coverage`
+      has): Composer's 300 s limit counts the wait, and killed a queued
+      second run.
+- [x] `TestRunLockTest`: while the test holds the lock, a `proc_open`
       child taking it does not finish and prints the message; it finishes
       once the lock is released (fails today: there is no lock).
-- [ ] `.claude/review-rules.md` §2: test runs from one checkout queue on
+- [x] `.claude/review-rules.md` §2: test runs from one checkout queue on
       `var/testing.lock`; an agent with a short tool timeout runs its
       tests in its own worktree.
 - [ ] Checked: two `composer test` runs at once from one checkout both

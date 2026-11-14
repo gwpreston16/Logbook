@@ -30,6 +30,11 @@ own file covers only its area: what it checks and how.
   screenshots and logs there, and delete them when you finish unless the
   caller asks you to keep something (merge-review keeps linked
   screenshots).
+- **Test runs queue.** PHPUnit runs from one checkout take turns on
+  `var/testing.lock` (K197): a second run prints "Waiting for another
+  test run in this checkout to finish…" and starts when the first ends.
+  If your tool calls have a short timeout, run your tests in your own
+  worktree under your scratch space, which has its own lock and database.
 - **Local only.** Run everything on this machine. Never touch a real
   install or a public host, and never call a real SSO provider, AI
   provider, mail server, notification service or the Fuel Finder API. Use
