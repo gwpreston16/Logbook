@@ -7,7 +7,7 @@ developer tooling under `.claude/` and `.impeccable/`, and the committed
 checkout queue instead of wiping each other's data; and PHPStan moves to
 2.3.*
 
-Status: 📋 planned · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
+Status: 🚧 in progress · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
 
 This is the batch after [Phase 54.14](phase-54.14.md), the last
 known-issues batch. It takes the only rows of the log still *Open* that
@@ -139,10 +139,11 @@ v3.21.11.
 
 ### 54.16.0 Start of phase
 
-- [ ] Read `open-questions.md` and the *Open* and *Scheduled* rows of
+- [x] Read `open-questions.md` and the *Open* and *Scheduled* rows of
       `known-issues.md` (CLAUDE.md §12). #607, #608 and #616–#620 are
-      decided. Check that none of the questions still open bears on K192,
-      K193, K197 or K175.
+      decided. Reviewed 2026-11-14: none of the questions still open
+      (#221, #390, #391, #460, #462, #537–#542, #551) bears on K192, K193,
+      K197 or K175, and none was found while starting it.
 
 ### 54.16.1 Charts without JS (K192)
 
