@@ -35,6 +35,12 @@ fails until it is re-vendored with `npm run vendor` (Phase 54.13, K183,
 package with a published advisory fails it (K182, #606); `symfony/http-client`
 allows `^7.4 || ^8.0` so the fixed 7.4 line can be locked while the platform
 pin stays PHP 8.4.0 (#597).
+The developer tooling committed under `.claude/` and `.impeccable/` (agent
+guides and the `impeccable` design skill) is not shipped: `.dockerignore`
+leaves it, `.playwright-mcp/` and `.DS_Store` files out of the image, so
+`THIRD-PARTY-NOTICES.md` doesn't list it. The skill's Apache 2.0 licence
+and a notice for the screenshot library it bundles sit in
+`.claude/skills/impeccable/` (Phase 54.16, K193, #608).
 
 ---
 
@@ -11266,7 +11272,13 @@ cost, who fitted it, the parts it fitted and what it took off). Decided
     tokens. Every chart has a table in the markup (a line chart's own
     points, `ui.chart_table()`, where the page had none) and it prints with
     the chart, even where the screen folds it away. Without JS, only the
-    tables exist.
+    tables exist: `ui.chart_table()` shows on screen without JS and is
+    kept for screen readers with it (`.chart-table`), so no chart card is
+    left with only its title (Phase 54.16, K192, #607). The true-cost
+    *Fleet* card's table has a row per year, newest first, and a column
+    per vehicle, `—` where a vehicle has no figure (#618). A hint that
+    describes the drawn chart (the *Economy trend*'s dashed line) shows
+    only when the chart is drawn (#617).
   - **Layout** (scoped to these pages by `.print-report`, so History's print
     view is unchanged): black on white whatever the theme or accent; the app
     shell, vehicle header and tabs, toolbars, chips and buttons are hidden;
@@ -11436,7 +11448,10 @@ Real environment variables override `.env`; an empty value counts as unset.
   `DB_WAIT_TIMEOUT` (default `60`), `SCHEDULER_ENABLED` (run the scheduled
   task inside the container; default `true`)
 - Test suite only: `TEST_DB_*` (same shape as `DB_*`; default SQLite
-  `var/testing.sqlite`). PHPUnit never reads `DB_*`.
+  `var/testing.sqlite`). PHPUnit never reads `DB_*`. A run takes a lock on
+  `var/testing.lock` before it resets the test database, so a second run
+  from the same checkout waits, saying so, rather than wiping the first
+  one's database and `var/cache` (Phase 54.16, K197, #619).
 
 ---
 
@@ -11460,6 +11475,8 @@ Real environment variables override `.env`; an empty value counts as unset.
   its libraries (78 MB measured on arm64, 2026-10-17).
   `docker-compose.yml` has an optional `ocr` profile running PaddleOCR
   beside it (#495), built from `docker/paddleocr/` on amd64 and arm64.
+  The image carries no developer tooling (`.claude/`, `.impeccable/`,
+  `.playwright-mcp/`, `.DS_Store`; Phase 54.16, K193, #608).
   The image sets `LOGBOOK_DOCKER=1` (Phase 28.2), so the update banner
   gives the Docker upgrade line (§7.31).
 - **Page security headers** (Phase 53.20, K54, #456): the app sends
@@ -12758,6 +12775,18 @@ task breakdowns live in the per-phase files; this is the map.
   the Reminders, history and tyre rows to match; urgency stays in the
   status pill (§8 *Category colours*). Releases v3.21.11. No migration.
   See [`phase-54.15.md`](docs/phases/phase-54.15.md).
+- **Phase 54.16 — Charts without JS, the Docker image's tooling and the
+  test runs from the known-issues log + patch release** (planned). With JS
+  off, the Fuel tab's *Economy trend* and *Price trend*, *Odometer over
+  time* and the true-cost *Fleet* card show their figures as a table, the
+  Fleet card's being new, and the economy hint shows only with the chart
+  (§8 *Printing reports*, K192, #607, #617, #618); the Docker image
+  excludes `.claude/`, `.impeccable/`, `.playwright-mcp/` and `.DS_Store`,
+  and the `impeccable` skill carries its licence (§1, §10, K193, #608);
+  a second test run from one checkout waits on `var/testing.lock` (§9,
+  K197, #619); PHPStan moves to 2.3 with targeted ignores and Dependabot
+  stops holding it back (K175, #620). Releases v3.21.12 (#616). No
+  migration. See [`phase-54.16.md`](docs/phases/phase-54.16.md).
 
 ---
 

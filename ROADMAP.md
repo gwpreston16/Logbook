@@ -147,6 +147,7 @@ Legend: ✅ complete · 🚧 in progress · 📋 planned
 | [54.13](docs/phases/phase-54.13.md) | The Symfony advisories and the vendored libraries from the known-issues log + patch release | ✅ |
 | [54.14](docs/phases/phase-54.14.md) | Big odometer readings, upgrade caches and small phone fixes from the known-issues log + patch release | ✅ |
 | [54.15](docs/phases/phase-54.15.md) | Category colours on the dashboard's rows + patch release | ✅ |
+| [54.16](docs/phases/phase-54.16.md) | Charts without JS, the Docker image's tooling and the test runs from the known-issues log + patch release | 📋 |
 
 *Update the status column as each phase lands.*
 
@@ -2013,6 +2014,27 @@ prototype draws its rows; status stays in the pill.*
   Releases v3.21.11. No migration.
 
 → [`phase-54.15.md`](docs/phases/phase-54.15.md)
+
+---
+
+## Phase 54.16 — Charts without JS, the Docker image's tooling and the test runs from the known-issues log + patch release
+
+*Four open rows closed: chart cards show their figures as a table without
+JS, the Docker image drops the developer tooling, test runs from one
+checkout queue, and PHPStan moves to 2.3.*
+
+- `ui.chart_table()` shows on screen without JS and stays for screen
+  readers and print with it; the true-cost *Fleet* card gets a years ×
+  vehicles table; the *Economy trend* hint shows only with the chart
+  (K192, #607, #617, #618).
+- `.dockerignore` excludes `.claude/`, `.impeccable/`, `.playwright-mcp/`
+  and `.DS_Store`, and the `impeccable` skill carries its licence (K193,
+  #608); the test bootstrap waits on `var/testing.lock` (K197, #619);
+  PHPStan 2.3 with targeted ignores, Dependabot no longer holding it back
+  (K175, #620).
+- Releases v3.21.12 (#616). No migration.
+
+→ [`phase-54.16.md`](docs/phases/phase-54.16.md)
 
 ---
 
