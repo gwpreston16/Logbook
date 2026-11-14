@@ -103,7 +103,8 @@
                             {% if section.economy_chart.hasData() %}
                                 {{ ui.chart(section.economy_chart, trend_title) }}
                                 {{ ui.chart_table(section.economy_chart, trend_title) }}
-                                <p class="field__hint">{{ 'fuel.chart.economy_hint'|trans }}</p>
+                                {# The hint describes the drawn chart's dashed line, so it shows only with it (K192, #617). #}
+                                <p class="field__hint chart-hint">{{ 'fuel.chart.economy_hint'|trans }}</p>
                             {% else %}
                                 <p class="muted">{{ 'fuel.chart.need_more'|trans }}</p>
                             {% endif %}

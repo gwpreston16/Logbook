@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Logbook\Tests\Integration\Http;
 
 use DateTimeImmutable;
+use Dom\Element;
 use Logbook\Domain\Compliance\ComplianceType;
 use Logbook\Domain\Feature\Feature;
 use Logbook\Support\Display\DisplayPreferences;
@@ -20,6 +21,7 @@ use Logbook\Service\Vehicle\VehicleService;
 use Logbook\Support\Date\LocalTime;
 use Logbook\Tests\Support\AppTestCase;
 use Logbook\Tests\Support\CostFixtures;
+use Logbook\Tests\Support\Html;
 use Logbook\Tests\Support\TestBrowser;
 use Psr\Container\ContainerInterface;
 use Slim\App;
@@ -118,6 +120,43 @@ final class TrueCostPagesTest extends AppTestCase
             'aria-labelledby="true-cost-heading"',
         );
         self::assertStringContainsString('True cost by year', $expenses);
+    }
+
+    /**
+     * K192 (#618): the Fleet card's line chart gets a table of the same
+     * figures, a row per year newest first and a column per vehicle, "—"
+     * where a vehicle has no figure; shown without JS (not print-only).
+     */
+    public function testTheFleetCardHasAYearsByVehiclesTable(): void
+    {
+        [$app, $browser] = $this->start();
+        $this->golf($app);
+        $polo = $this->car($app, 'Volkswagen', 'Polo', '2025-01-01', '9000');
+        $this->reading($app, $polo, '500', '2025-01-01T09:00:00Z');
+        $this->fillUp($app, $polo, '2025-12-31T09:00:00Z', '6500', '300', '450.00');
+        $this->fillUp($app, $polo, '2026-10-01T09:00:00Z', '11500', '250', '375.00');
+
+        $document = Html::document(self::body($browser->get('/reports/true-cost')));
+        $card = Html::element($document, 'section[aria-labelledby="true-cost-fleet-GBP"]');
+        self::assertNotNull($card->querySelector('canvas[data-chart]'));
+        $table = $card->querySelector('.table-wrap.chart-table > table.chart-print-table');
+        self::assertInstanceOf(Element::class, $table, 'the Fleet card has a table');
+        self::assertNull($card->querySelector('.print-only'), 'shown on screen, not print-only');
+
+        $caption = trim((string) $table->querySelector('caption')?->textContent);
+        self::assertSame('Total cost per distance by year, vehicles in British Pound. · Cost per mile', $caption);
+        // A row's cells as trimmed text.
+        $texts = static fn (Element $row): array => array_map(
+            static fn (Element $cell): string => trim((string) $cell->textContent),
+            iterator_to_array($row->querySelectorAll('th, td')),
+        );
+        $head = $table->querySelector('thead tr') ?? self::fail('no header row');
+        self::assertSame(['Year', 'Volkswagen Golf', 'Volkswagen Polo'], $texts($head));
+        $rows = array_map($texts, iterator_to_array($table->querySelectorAll('tbody tr')));
+        self::assertSame(['2026', '2025', '2024'], array_column($rows, 0), 'newest year first');
+        self::assertMatchesRegularExpression('/^£\d+\.\d{3}$/', $rows[0][1], 'the Golf in 2026, at the chart’s precision');
+        self::assertMatchesRegularExpression('/^£\d+\.\d{3}$/', $rows[0][2], 'the Polo in 2026');
+        self::assertSame('—', $rows[2][2], 'the Polo had no 2024');
     }
 
     public function testTheCoverNoteShowsOnceUnderTheTableForAVehicleOlderThanThreeYears(): void

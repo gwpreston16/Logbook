@@ -147,18 +147,25 @@ v3.21.11.
 
 ### 54.16.1 Charts without JS (K192)
 
-- [ ] `templates/macros/ui.twig` `chart_table()`: the wrapper drops
+- [x] `templates/macros/ui.twig` `chart_table()`: the wrapper drops
       `print-only`; the table takes `chart-table` beside
       `chart-print-table`; its comment says it shows without JS, is kept
-      for screen readers with JS, and prints (#607).
-- [ ] `templates/fuel/index.twig`: the *Economy trend* hint shows only with
+      for screen readers with JS, and prints (#607). *Built:*
+      `chart-table` sits on the `.table-wrap` rather than the table, as on
+      the dashboard's monthly spend: a table can't shrink below its
+      content, so hiding only the table left its scrolling wrapper an
+      empty 15 px scrollbar with JS. The caption (chart and unit) gets a
+      screen style: a muted line, left-aligned with the figures.
+- [x] `templates/fuel/index.twig`: the *Economy trend* hint shows only with
       JS (#617); `assets/css/app.css` gets the rule beside `.js .chart`.
-- [ ] `Support\View\BarChart`: read accessors for its labels and its
+- [x] `Support\View\BarChart`: read accessors for its labels and its
       series (label and values). `templates/reports/true_cost.twig`: the
       *Fleet* card's table as #618 says (year rows newest first, a column
       per vehicle, `—` for a missing year, `true_cost.fleet_year` in both
-      catalogues). Rebuild `public/assets`.
-- [ ] Tests: an HTTP test fetching the Fuel tab, the Mileage tab and the
+      catalogues). Rebuild `public/assets`. *Built:* a
+      `ui.bar_chart_table()` macro beside `chart_table()`; the caption's
+      unit is the existing `fuel.chart.cost_axis` ("Cost per mile").
+- [x] Tests: an HTTP test fetching the Fuel tab, the Mileage tab and the
       true-cost report with two vehicles: each `canvas[data-chart]` on
       those cards has a `table.chart-table` in its card, with none under
       `.print-only` (fails today); the Fleet table's first row is the
@@ -167,9 +174,14 @@ v3.21.11.
       `/reports/true-cost` and its `.print-only > table` lookup follows
       the new class. A CSS check (as `TapTargetTest` reads `app.css`) that
       the hint's class is hidden unless `.js`.
-- [ ] Checked in a browser with JS off and on, light and dark, at 375 px
+- [x] Checked in a browser with JS off and on, light and dark, at 375 px
       and wide: the four cards; print preview of the Fuel tab and the
-      true-cost report.
+      true-cost report. *Checked 2026-11-14* on the demo data at the
+      `/logbook` subpath: without JS each card shows its table and the
+      Economy hint is gone, with no page overflow at 375 px; with JS the
+      chart draws and the table takes 1 px. Print follows the existing
+      `.js .print-report .chart-table` rule (covered by
+      `PrintReportsTest`); no print preview was taken.
 
 ### 54.16.2 The Docker image's tooling (K193)
 

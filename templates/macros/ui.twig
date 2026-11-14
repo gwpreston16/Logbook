@@ -374,10 +374,13 @@
 {%- endmacro %}
 
 {# A LineChart's figures as a table (spec.md §8 *Printing reports*): for a
-   chart whose page has no table of its own. Print-only: the screen keeps
-   the chart and the page's own list. #}
+   chart whose card has no table of its own. Shown on screen without JS,
+   kept for screen readers with it (.js .chart-table), and printed with
+   the chart (K192, #607). The class sits on the wrapper, as on the
+   dashboard's monthly spend: a table can't shrink below its content, so
+   hiding only the table left its scrolling wrapper an empty scrollbar. #}
 {% macro chart_table(chart, label) -%}
-    <div class="table-wrap print-only">
+    <div class="table-wrap chart-table">
         <table class="table chart-print-table">
             <caption class="chart-print-table__unit">{{ label }} · {{ chart.unitLabel() }}</caption>
             <thead>
@@ -393,6 +396,40 @@
                     <tr>
                         <th scope="row">{{ chart.hasCalendarDates() ? row.at|local_date : row.at|instant_date }}</th>
                         {% for value in row.values %}
+                            <td class="table__num tabular">{{ value is null ? '—' : value|chart_value(chart.decimals(), chart.currency()) }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{%- endmacro %}
+
+{# A BarChart's figures as a table, a row per label (newest last in the
+   chart, so read backwards: newest first, as chart_table) and a column per
+   series, "—" where a series has no figure. Behaves as chart_table: shown
+   without JS, kept for screen readers with it, printed (spec.md §8
+   *Printing reports*, the true-cost Fleet card, K192, #618). #}
+{% macro bar_chart_table(chart, label, unit, first_column) -%}
+    {%- set labels = chart.labels() -%}
+    {%- set series = chart.series() -%}
+    <div class="table-wrap chart-table">
+        <table class="table chart-print-table">
+            <caption class="chart-print-table__unit">{{ label }} · {{ unit }}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">{{ first_column }}</th>
+                    {% for one in series %}
+                        <th scope="col" class="table__num">{{ one.label }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in labels|keys|reverse %}
+                    <tr>
+                        <th scope="row">{{ labels[i] }}</th>
+                        {% for one in series %}
+                            {% set value = one.values[i] ?? null %}
                             <td class="table__num tabular">{{ value is null ? '—' : value|chart_value(chart.decimals(), chart.currency()) }}</td>
                         {% endfor %}
                     </tr>

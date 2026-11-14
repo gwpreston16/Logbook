@@ -2779,6 +2779,16 @@ a.segmented__option {
     display: block;
 }
 
+/* A hint about the drawn chart (the Economy trend's dashed line) shows only
+   with it; without JS the card shows the chart's table instead (K192, #617). */
+.chart-hint {
+    display: none;
+}
+
+.js .chart-hint {
+    display: block;
+}
+
 /* Log rows: trailing amount + economy / delta + source. */
 .list__end {
     display: flex;
@@ -6045,6 +6055,17 @@ a.list__title:hover {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/* A chart table's caption names the chart and its unit: on screen without
+   JS it reads as a muted line above the figures, left-aligned with them
+   rather than centred over a table that may scroll (K192). */
+.chart-print-table__unit {
+    padding: 0 var(--space-2) var(--space-1);
+    caption-side: top;
+    text-align: left;
+    color: var(--muted);
+    font-size: var(--fs-meta);
 }
 
 /* Which vehicle a form in the modal is for (the page shows it in its header). */
