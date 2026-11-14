@@ -185,12 +185,12 @@ v3.21.11.
 
 ### 54.16.2 The Docker image's tooling (K193)
 
-- [ ] `.dockerignore`: `.claude`, `.impeccable`, `.playwright-mcp`,
+- [x] `.dockerignore`: `.claude`, `.impeccable`, `.playwright-mcp`,
       `**/.DS_Store`, with a comment naming K193 and #608.
-- [ ] `.claude/skills/impeccable/LICENSE` (Apache 2.0, from the skill's
+- [x] `.claude/skills/impeccable/LICENSE` (Apache 2.0, from the skill's
       upstream) and `.claude/skills/impeccable/NOTICE` (modern-screenshot,
       its upstream and licence).
-- [ ] `LicenceTest`: `.dockerignore` excludes the four entries, and the
+- [x] `LicenceTest`: `.dockerignore` excludes the four entries, and the
       skill's `LICENSE` exists and is the Apache License 2.0 (fails today).
 - [x] A clean `docker build`: the image has no `/var/www/html/.claude` or
       `.impeccable` (checked by hand, recorded in the merge review).
