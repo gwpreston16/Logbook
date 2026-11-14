@@ -7,7 +7,7 @@ developer tooling under `.claude/` and `.impeccable/`, and the committed
 checkout queue instead of wiping each other's data; and PHPStan moves to
 2.3.*
 
-Status: ✅ complete · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
+Status: ✅ complete · released as **v3.21.12**, a patch release · file lives in `docs/phases/`
 
 This is the batch after [Phase 54.14](phase-54.14.md), the last
 known-issues batch. It takes the only rows of the log still *Open* that
@@ -257,12 +257,14 @@ v3.21.11.
 
 - [x] Known-issues rows K192, K193, K197 and K175 *Fixed* (Phase 54.16).
 - [x] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
-- [ ] Merge review; merge. (After the pull request; merge as a merge commit, not a squash.)
+- [x] Merge review; merge. (After the pull request; merge as a merge commit, not a squash.)
+      (Merged in #231 on 2026-11-14; the merge review ran afterwards, the
+      same day, below.)
 
 ### Release
 
 - [x] VERSION 3.21.12, CHANGELOG 3.21.12, README status (#616).
-- [ ] Tag `v3.21.12` once merged.
+- [x] Tag `v3.21.12` once merged.
 
 ## Design review (2026-11-14)
 
@@ -331,3 +333,38 @@ were not run. Not covered: German, the other accents, a keyboard pass;
 - **#620 — How does PHPStan move off 2.2 (K175)?** *Decided 2026-11-14:*
   the latest 2.3.x with targeted ignores for false errors, and the
   Dependabot ignore removed. Not chosen: only if clean; change the code.
+- **#621 — How should two vehicles with the same displayed name be told
+  apart (K203, found in the merge review)?** *Needs a decision.* Options:
+  the registration (or year) only on a clash; always the registration;
+  unique names enforced on save; leave it to nicknames.
+
+## Merge review (2026-11-14)
+
+MERGE at ca59be08, run after the merge, in release mode
+(v3.21.11..ca59be08). CI on that commit passed every gate: lint and
+PHPStan 2.3, 50 JS tests, built assets current, 4,887 tests on SQLite,
+PostgreSQL, MySQL and MariaDB (and PHP 8.5), line coverage 95.41% against
+the 95% floor, 19 of 20 changed lines covered (on the PR head), and the
+multi-arch image with its smoke test. All ten agents ran; none found
+anything CRITICAL or HIGH.
+
+- **Correctness and security.** Every check removed for PHPStan 2.3 was
+  unreachable (bug-hunter, security-scanner, api-contract-checker and
+  upgrade-tester read each one). A scratch test showed the new tables
+  escape vehicle names and show no money to a member without cost
+  access.
+- **Upgrade.** SAFE WITH NOTES on SQLite and PostgreSQL, old → new → old:
+  no migration, stored data identical, backups restore both ways and from
+  SQLite into PostgreSQL. MySQL and MariaDB weren't run locally (no SQL
+  or schema change; CI ran the suite on both).
+- **Image.** A local build has no `.claude`, `.impeccable`,
+  `.playwright-mcp` or `.DS_Store`, and the SQLite quick start works.
+- **Integrations, AI, imports.** The API, MCP, webhooks, calendar feed
+  and CSV exports are unchanged; document reading and imports give the
+  same results as v3.21.11.
+- **Design.** German, purple and teal, a keyboard pass, JS on and off.
+  With JS on, each chart's screen-reader table is an invisible tab stop
+  (K202, MEDIUM, the dashboard's *Monthly spend* already was).
+
+The issue sweep recorded K202–K208 in the known-issues log, and #621 (how
+same-named vehicles are told apart, K203) as an open question.
