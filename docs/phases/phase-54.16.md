@@ -7,7 +7,7 @@ developer tooling under `.claude/` and `.impeccable/`, and the committed
 checkout queue instead of wiping each other's data; and PHPStan moves to
 2.3.*
 
-Status: 🚧 in progress · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
+Status: ✅ complete · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
 
 This is the batch after [Phase 54.14](phase-54.14.md), the last
 known-issues batch. It takes the only rows of the log still *Open* that
@@ -192,8 +192,12 @@ v3.21.11.
       its upstream and licence).
 - [ ] `LicenceTest`: `.dockerignore` excludes the four entries, and the
       skill's `LICENSE` exists and is the Apache License 2.0 (fails today).
-- [ ] A clean `docker build`: the image has no `/var/www/html/.claude` or
+- [x] A clean `docker build`: the image has no `/var/www/html/.claude` or
       `.impeccable` (checked by hand, recorded in the merge review).
+      *Checked 2026-11-14* on a local arm64 build: no `.claude`,
+      `.impeccable`, `.playwright-mcp` or `.DS_Store` under
+      `/var/www/html`, though the checkout has three `.DS_Store` files.
+      amd64 is left to CI's multi-arch build.
 
 ### 54.16.3 Test runs that queue (K197)
 
@@ -213,12 +217,16 @@ v3.21.11.
 - [x] `.claude/review-rules.md` §2: test runs from one checkout queue on
       `var/testing.lock`; an agent with a short tool timeout runs its
       tests in its own worktree.
-- [ ] Checked: two `composer test` runs at once from one checkout both
+- [x] Checked: two `composer test` runs at once from one checkout both
       pass, the second after the first; `bin/test-all-dbs.sh` still runs
       on all four engines (the lock sits in the bind-mounted `var/`).
       *2026-11-14:* two runs at once both passed (4,885 tests each); the
       second printed the waiting line and finished at 442 s, the first at
-      228 s.
+      228 s. On macOS Docker Desktop the lock taken inside
+      `bin/test-all-dbs.sh`'s container doesn't reach a native run: a
+      native coverage run started without waiting (K201, *Open*); the
+      container runs keep their own SQLite file.
+      `bin/test-all-dbs.sh` passed on all four engines (4,887 tests each).
 
 ### 54.16.4 PHPStan 2.3 (K175)
 
@@ -247,14 +255,39 @@ v3.21.11.
 
 ### 54.16.5 Finish
 
-- [ ] Known-issues rows K192, K193, K197 and K175 *Fixed* (Phase 54.16).
-- [ ] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
-- [ ] Merge review; merge.
+- [x] Known-issues rows K192, K193, K197 and K175 *Fixed* (Phase 54.16).
+- [x] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
+- [ ] Merge review; merge. (After the pull request; merge as a merge commit, not a squash.)
 
 ### Release
 
-- [ ] VERSION 3.21.12, CHANGELOG 3.21.12, README status (#616).
+- [x] VERSION 3.21.12, CHANGELOG 3.21.12, README status (#616).
 - [ ] Tag `v3.21.12` once merged.
+
+## Design review (2026-11-14)
+
+K192 is the only change that draws anything. The design-reviewer agent
+checked the Fuel tab, the Mileage tab and `/reports/true-cost` on SQLite
+demo data at 375, 768 and 1280 px, light and dark, in a browser with
+JavaScript disabled and with it on, and in print media. No HIGH or MEDIUM
+findings. Without JS the four cards show their tables, the Economy hint is
+hidden and nothing overflows; with JS each table's wrapper is 1 px and
+clipped, so no empty scrollbar, and the hint shows. Each chart table
+prints once, caption on top, with the chart. The caption's screen style
+uses `--fs-meta` and `--muted` only. The tables have a caption and `th`
+scopes. A browser check while building found the empty scrollbar a
+visually hidden table left in its `.table-wrap`, fixed by moving
+`chart-table` to the wrapper (54.16.1).
+
+Three LOW notes, none changed: the Fleet card's caption repeats its lead
+line above it, plus the unit (#618 names the caption so; harmless to a
+screen reader); the no-JS Economy and Odometer tables are long, a row per
+reading, as the print-only ones were (#607 accepted it; a cap would be a
+new question); a "—" cell has no text alternative, as in the report's
+other tables. No token, colour, font, radius or component changed, so
+`DESIGN.md` is unchanged and the Impeccable audit, critique and polish
+were not run. Not covered: German, the other accents, a keyboard pass;
+`design-import/` has no no-JS table state to compare with.
 
 ## Acceptance criteria
 
