@@ -83,14 +83,15 @@ final readonly class CreateModificationAction
         if ($parts instanceof ValidationErrors) {
             $errors = ($errors ?? ($data instanceof ValidationErrors ? $data : new ValidationErrors()))->merge($parts);
         }
-        if ($errors !== null || $data instanceof ValidationErrors || $parts instanceof ValidationErrors) {
+        // A parts error has already been merged into $errors above.
+        if ($errors !== null || $data instanceof ValidationErrors) {
             return $this->page->render(
                 $request,
                 $response,
                 $vehicle,
                 $values,
                 null,
-                $errors ?? ($data instanceof ValidationErrors ? $data : null),
+                $errors ?? $data,
                 422,
             );
         }

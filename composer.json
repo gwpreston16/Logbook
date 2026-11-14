@@ -61,7 +61,7 @@
     "require-dev": {
         "justinrainbow/json-schema": "^6.13",
         "league/openapi-psr7-validator": "^0.24",
-        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^12.5",
         "squizlabs/php_codesniffer": "^4.0"
     },

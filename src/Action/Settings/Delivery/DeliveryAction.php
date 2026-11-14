@@ -79,8 +79,8 @@ final readonly class DeliveryAction
             return $this->render($request, $response, $form->values, $errors, $form->warnings, null, 422, $input);
         }
 
+        // Testing always has an address: the owner's own, or the one posted (validated above).
         if ($testing) {
-            assert(is_string($testTo));
             $result = $this->admin->test($form->server, $form->password, $form->removePassword, $testTo, $user);
 
             return $this->render($request, $response, $form->values, [], $form->warnings, $result, 200, $input);

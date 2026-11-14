@@ -893,7 +893,7 @@ final readonly class FuelioImporter
                 );
                 continue;
             }
-            assert($fill !== null);
+            // No reason and no earlier entry: the match above leaves only a fill-up being imported here.
             $rows[] = new AppRow(
                 $photo->line,
                 AppRowStatus::Import,

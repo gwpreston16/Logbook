@@ -70,7 +70,8 @@ final class MileageAllowance
         }
 
         $projected = null;
-        if ($distance !== null && $latest !== null) {
+        // A distance is only worked out from the latest reading, so there is one here.
+        if ($distance !== null) {
             if (!$agreement->status->isActive()) {
                 $projected = $distance;
             } else {

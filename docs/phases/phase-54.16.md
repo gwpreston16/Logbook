@@ -216,15 +216,32 @@ v3.21.11.
 - [ ] Checked: two `composer test` runs at once from one checkout both
       pass, the second after the first; `bin/test-all-dbs.sh` still runs
       on all four engines (the lock sits in the bind-mounted `var/`).
+      *2026-11-14:* two runs at once both passed (4,885 tests each); the
+      second printed the waiting line and finished at 442 s, the first at
+      228 s.
 
 ### 54.16.4 PHPStan 2.3 (K175)
 
-- [ ] `composer update phpstan/phpstan` to the latest 2.3.x;
+- [x] `composer update phpstan/phpstan` to the latest 2.3.x;
       `composer analyse`; a targeted `ignoreErrors` entry per remaining
       false error with a K175 comment, and real errors fixed (#620).
-- [ ] `.github/dependabot.yml`: the `phpstan/phpstan >=2.3.0` ignore and
+      *Built:* 2.3.5 reported 29 (12 in `src/`, 17 in tests). Thirteen
+      were real (checks that could never change the outcome) and are fixed
+      in the code: a parts or fit
+      error checked again after it was merged into `$errors` (five form
+      actions, whose `$errors ?? ($data instanceof … ? $data : null)` then
+      became `$errors ?? $data`), a nullsafe on a file that is always
+      prepared when the read succeeded (`ScanReader`), redundant null
+      checks or asserts (`DeliveryAction`, `FuelioImporter`,
+      `MileageAllowance`, `VehicleArchiving`), and an always-true
+      assertion in `TripsTest`. The other 16, all in five test files, are
+      PHPStan narrowing a property (or a closure's template type) and
+      keeping it after a call that writes to it through another object or
+      a reference; they have 11 `rawMessage` + `path` + `count` entries.
+      The constraint is `^2.3`.
+- [x] `.github/dependabot.yml`: the `phpstan/phpstan >=2.3.0` ignore and
       its comment removed.
-- [ ] A test (beside `VendoredLibrariesTest`) that `composer.lock` holds
+- [x] A test (beside `VendoredLibrariesTest`) that `composer.lock` holds
       `phpstan/phpstan` 2.3 or later and `dependabot.yml` doesn't ignore it
       (fails today).
 

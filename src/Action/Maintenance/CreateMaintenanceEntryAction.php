@@ -111,7 +111,8 @@ final readonly class CreateMaintenanceEntryAction
         if ($parts instanceof ValidationErrors) {
             $errors = ($errors ?? ($data instanceof ValidationErrors ? $data : new ValidationErrors()))->merge($parts);
         }
-        if ($errors !== null || $data instanceof ValidationErrors || $parts instanceof ValidationErrors) {
+        // A parts error has already been merged into $errors above.
+        if ($errors !== null || $data instanceof ValidationErrors) {
             $values = RequestContext::formValues($request);
 
             $ticked = $this->fixes->posted($input);
@@ -123,7 +124,7 @@ final readonly class CreateMaintenanceEntryAction
                 $currency,
                 $values,
                 null,
-                $errors ?? ($data instanceof ValidationErrors ? $data : null),
+                $errors ?? $data,
                 422,
                 $ticked,
             );
