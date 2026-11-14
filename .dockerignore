@@ -17,3 +17,11 @@ docs/*
 *.md
 !README.md
 !THIRD-PARTY-NOTICES.md
+# Developer tooling (agent guides, the impeccable design skill and its
+# state, browser-tool output, macOS folder files) is not part of the app:
+# it stays out of the image, so THIRD-PARTY-NOTICES.md needn't list it
+# (Phase 54.16, K193, #608).
+.claude
+.impeccable
+.playwright-mcp
+**/.DS_Store

@@ -56,6 +56,27 @@ final class LicenceTest extends TestCase
         self::assertStringContainsString('Signed-off-by', $this->read('CONTRIBUTING.md'));
     }
 
+    /**
+     * K193 (#608): the developer tooling stays out of the Docker image, and
+     * the vendored impeccable skill carries its Apache 2.0 licence and a
+     * notice for the screenshot library it bundles.
+     */
+    public function testTheToolingStaysOutOfTheImageAndTheSkillKeepsItsLicence(): void
+    {
+        $ignored = array_map('trim', explode("\n", $this->read('.dockerignore')));
+        foreach (['.claude', '.impeccable', '.playwright-mcp', '**/.DS_Store'] as $entry) {
+            self::assertContains($entry, $ignored, $entry . ' is left out of the image');
+        }
+
+        $license = $this->read('.claude/skills/impeccable/LICENSE');
+        self::assertStringStartsWith('Apache License', trim($license));
+        self::assertStringContainsString('Version 2.0, January 2004', $license);
+        $notice = $this->read('.claude/skills/impeccable/NOTICE');
+        self::assertStringContainsString('scripts/modern-screenshot.umd.js', $notice);
+        self::assertStringContainsString('https://github.com/qq15725/modern-screenshot', $notice);
+        self::assertStringContainsString('The MIT License', $notice);
+    }
+
     public function testTheCommittedNoticesAreCurrent(): void
     {
         [$code, $output] = $this->notices('--check');
