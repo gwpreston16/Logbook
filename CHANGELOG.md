@@ -6,6 +6,38 @@ is called out explicitly.
 
 ## [Unreleased]
 
+## [3.21.12] — 2026-11-14
+
+Phase 54.16: **Charts without JS, the Docker image's tooling and the test
+runs from the known-issues log**
+([docs/phases/phase-54.16.md](docs/phases/phase-54.16.md)). No migration;
+pull and restart.
+
+### Fixed
+- **Every chart shows its figures without JavaScript.** With scripts off,
+  the Fuel tab's *Economy trend* and *Price trend*, *Odometer over time*
+  and the true-cost report's *Fleet* card showed only their title. They
+  now show the same figures as a table; with scripts on the chart is drawn
+  as before and the table is kept for screen readers and print. The
+  *Fleet* card's table is new, with a row per year and a column per
+  vehicle, and it prints with the chart. The *Economy trend* hint about
+  the dashed line shows only when the chart is drawn (K192).
+- **The Docker image no longer carries developer tooling.** The agent
+  guides and design skill under `.claude/` and `.impeccable/`, browser-tool
+  output and `.DS_Store` files are left out of the image. The design skill
+  kept in the repository now carries its Apache 2.0 licence and a notice
+  for the screenshot library it bundles (K193).
+
+### Changed
+- **For contributors: test runs take turns.** A second `composer test`
+  started from the same checkout while one is running now prints "Waiting
+  for another test run in this checkout to finish…" and starts when the
+  first ends, instead of deleting its test database. The `composer test`
+  scripts no longer stop after Composer's 300-second limit (K197).
+- **For contributors: PHPStan 2.3.** Static analysis moves to PHPStan
+  2.3.5. The redundant checks it found are removed from the code; nothing
+  the app does changes (K175).
+
 ## [3.21.11] — 2026-11-13
 
 Phase 54.15: **Category colours on the dashboard's rows**

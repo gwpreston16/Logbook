@@ -7,7 +7,7 @@ developer tooling under `.claude/` and `.impeccable/`, and the committed
 checkout queue instead of wiping each other's data; and PHPStan moves to
 2.3.*
 
-Status: 📋 planned · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
+Status: ✅ complete · releases **v3.21.12**, a patch release · file lives in `docs/phases/`
 
 This is the batch after [Phase 54.14](phase-54.14.md), the last
 known-issues batch. It takes the only rows of the log still *Open* that
@@ -139,25 +139,33 @@ v3.21.11.
 
 ### 54.16.0 Start of phase
 
-- [ ] Read `open-questions.md` and the *Open* and *Scheduled* rows of
+- [x] Read `open-questions.md` and the *Open* and *Scheduled* rows of
       `known-issues.md` (CLAUDE.md §12). #607, #608 and #616–#620 are
-      decided. Check that none of the questions still open bears on K192,
-      K193, K197 or K175.
+      decided. Reviewed 2026-11-14: none of the questions still open
+      (#221, #390, #391, #460, #462, #537–#542, #551) bears on K192, K193,
+      K197 or K175, and none was found while starting it.
 
 ### 54.16.1 Charts without JS (K192)
 
-- [ ] `templates/macros/ui.twig` `chart_table()`: the wrapper drops
+- [x] `templates/macros/ui.twig` `chart_table()`: the wrapper drops
       `print-only`; the table takes `chart-table` beside
       `chart-print-table`; its comment says it shows without JS, is kept
-      for screen readers with JS, and prints (#607).
-- [ ] `templates/fuel/index.twig`: the *Economy trend* hint shows only with
+      for screen readers with JS, and prints (#607). *Built:*
+      `chart-table` sits on the `.table-wrap` rather than the table, as on
+      the dashboard's monthly spend: a table can't shrink below its
+      content, so hiding only the table left its scrolling wrapper an
+      empty 15 px scrollbar with JS. The caption (chart and unit) gets a
+      screen style: a muted line, left-aligned with the figures.
+- [x] `templates/fuel/index.twig`: the *Economy trend* hint shows only with
       JS (#617); `assets/css/app.css` gets the rule beside `.js .chart`.
-- [ ] `Support\View\BarChart`: read accessors for its labels and its
+- [x] `Support\View\BarChart`: read accessors for its labels and its
       series (label and values). `templates/reports/true_cost.twig`: the
       *Fleet* card's table as #618 says (year rows newest first, a column
       per vehicle, `—` for a missing year, `true_cost.fleet_year` in both
-      catalogues). Rebuild `public/assets`.
-- [ ] Tests: an HTTP test fetching the Fuel tab, the Mileage tab and the
+      catalogues). Rebuild `public/assets`. *Built:* a
+      `ui.bar_chart_table()` macro beside `chart_table()`; the caption's
+      unit is the existing `fuel.chart.cost_axis` ("Cost per mile").
+- [x] Tests: an HTTP test fetching the Fuel tab, the Mileage tab and the
       true-cost report with two vehicles: each `canvas[data-chart]` on
       those cards has a `table.chart-table` in its card, with none under
       `.print-only` (fails today); the Fleet table's first row is the
@@ -166,59 +174,120 @@ v3.21.11.
       `/reports/true-cost` and its `.print-only > table` lookup follows
       the new class. A CSS check (as `TapTargetTest` reads `app.css`) that
       the hint's class is hidden unless `.js`.
-- [ ] Checked in a browser with JS off and on, light and dark, at 375 px
+- [x] Checked in a browser with JS off and on, light and dark, at 375 px
       and wide: the four cards; print preview of the Fuel tab and the
-      true-cost report.
+      true-cost report. *Checked 2026-11-14* on the demo data at the
+      `/logbook` subpath: without JS each card shows its table and the
+      Economy hint is gone, with no page overflow at 375 px; with JS the
+      chart draws and the table takes 1 px. Print follows the existing
+      `.js .print-report .chart-table` rule (covered by
+      `PrintReportsTest`); no print preview was taken.
 
 ### 54.16.2 The Docker image's tooling (K193)
 
-- [ ] `.dockerignore`: `.claude`, `.impeccable`, `.playwright-mcp`,
+- [x] `.dockerignore`: `.claude`, `.impeccable`, `.playwright-mcp`,
       `**/.DS_Store`, with a comment naming K193 and #608.
-- [ ] `.claude/skills/impeccable/LICENSE` (Apache 2.0, from the skill's
+- [x] `.claude/skills/impeccable/LICENSE` (Apache 2.0, from the skill's
       upstream) and `.claude/skills/impeccable/NOTICE` (modern-screenshot,
       its upstream and licence).
-- [ ] `LicenceTest`: `.dockerignore` excludes the four entries, and the
+- [x] `LicenceTest`: `.dockerignore` excludes the four entries, and the
       skill's `LICENSE` exists and is the Apache License 2.0 (fails today).
-- [ ] A clean `docker build`: the image has no `/var/www/html/.claude` or
+- [x] A clean `docker build`: the image has no `/var/www/html/.claude` or
       `.impeccable` (checked by hand, recorded in the merge review).
+      *Checked 2026-11-14* on a local arm64 build: no `.claude`,
+      `.impeccable`, `.playwright-mcp` or `.DS_Store` under
+      `/var/www/html`, though the checkout has three `.DS_Store` files.
+      amd64 is left to CI's multi-arch build.
 
 ### 54.16.3 Test runs that queue (K197)
 
-- [ ] `tests/Support/TestRunLock.php`: takes `flock(LOCK_EX)` on
+- [x] `tests/Support/TestRunLock.php`: takes `flock(LOCK_EX)` on
       `var/testing.lock`, printing the #619 message to STDERR once if it
       has to wait, and keeps the handle for the process's life.
       `tests/bootstrap.php` calls it before the SQLite file is deleted.
-- [ ] `TestRunLockTest`: while the test holds the lock, a `proc_open`
+      *Built:* after the K148 and K156 refusals, which only read settings:
+      taken first, it deadlocked `TestBootstrapTest`, whose child run of
+      the bootstrap waited on its parent's lock. `composer test` also
+      gets `Composer\Config::disableProcessTimeout` (as `test:coverage`
+      has): Composer's 300 s limit counts the wait, and killed a queued
+      second run.
+- [x] `TestRunLockTest`: while the test holds the lock, a `proc_open`
       child taking it does not finish and prints the message; it finishes
       once the lock is released (fails today: there is no lock).
-- [ ] `.claude/review-rules.md` §2: test runs from one checkout queue on
+- [x] `.claude/review-rules.md` §2: test runs from one checkout queue on
       `var/testing.lock`; an agent with a short tool timeout runs its
       tests in its own worktree.
-- [ ] Checked: two `composer test` runs at once from one checkout both
+- [x] Checked: two `composer test` runs at once from one checkout both
       pass, the second after the first; `bin/test-all-dbs.sh` still runs
       on all four engines (the lock sits in the bind-mounted `var/`).
+      *2026-11-14:* two runs at once both passed (4,885 tests each); the
+      second printed the waiting line and finished at 442 s, the first at
+      228 s. On macOS Docker Desktop the lock taken inside
+      `bin/test-all-dbs.sh`'s container doesn't reach a native run: a
+      native coverage run started without waiting (K201, *Open*); the
+      container runs keep their own SQLite file.
+      `bin/test-all-dbs.sh` passed on all four engines (4,887 tests each).
 
 ### 54.16.4 PHPStan 2.3 (K175)
 
-- [ ] `composer update phpstan/phpstan` to the latest 2.3.x;
+- [x] `composer update phpstan/phpstan` to the latest 2.3.x;
       `composer analyse`; a targeted `ignoreErrors` entry per remaining
       false error with a K175 comment, and real errors fixed (#620).
-- [ ] `.github/dependabot.yml`: the `phpstan/phpstan >=2.3.0` ignore and
+      *Built:* 2.3.5 reported 29 (12 in `src/`, 17 in tests). Thirteen
+      were real (checks that could never change the outcome) and are fixed
+      in the code: a parts or fit
+      error checked again after it was merged into `$errors` (five form
+      actions, whose `$errors ?? ($data instanceof … ? $data : null)` then
+      became `$errors ?? $data`), a nullsafe on a file that is always
+      prepared when the read succeeded (`ScanReader`), redundant null
+      checks or asserts (`DeliveryAction`, `FuelioImporter`,
+      `MileageAllowance`, `VehicleArchiving`), and an always-true
+      assertion in `TripsTest`. The other 16, all in five test files, are
+      PHPStan narrowing a property (or a closure's template type) and
+      keeping it after a call that writes to it through another object or
+      a reference; they have 11 `rawMessage` + `path` + `count` entries.
+      The constraint is `^2.3`.
+- [x] `.github/dependabot.yml`: the `phpstan/phpstan >=2.3.0` ignore and
       its comment removed.
-- [ ] A test (beside `VendoredLibrariesTest`) that `composer.lock` holds
+- [x] A test (beside `VendoredLibrariesTest`) that `composer.lock` holds
       `phpstan/phpstan` 2.3 or later and `dependabot.yml` doesn't ignore it
       (fails today).
 
 ### 54.16.5 Finish
 
-- [ ] Known-issues rows K192, K193, K197 and K175 *Fixed* (Phase 54.16).
-- [ ] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
-- [ ] Merge review; merge.
+- [x] Known-issues rows K192, K193, K197 and K175 *Fixed* (Phase 54.16).
+- [x] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
+- [ ] Merge review; merge. (After the pull request; merge as a merge commit, not a squash.)
 
 ### Release
 
-- [ ] VERSION 3.21.12, CHANGELOG 3.21.12, README status (#616).
+- [x] VERSION 3.21.12, CHANGELOG 3.21.12, README status (#616).
 - [ ] Tag `v3.21.12` once merged.
+
+## Design review (2026-11-14)
+
+K192 is the only change that draws anything. The design-reviewer agent
+checked the Fuel tab, the Mileage tab and `/reports/true-cost` on SQLite
+demo data at 375, 768 and 1280 px, light and dark, in a browser with
+JavaScript disabled and with it on, and in print media. No HIGH or MEDIUM
+findings. Without JS the four cards show their tables, the Economy hint is
+hidden and nothing overflows; with JS each table's wrapper is 1 px and
+clipped, so no empty scrollbar, and the hint shows. Each chart table
+prints once, caption on top, with the chart. The caption's screen style
+uses `--fs-meta` and `--muted` only. The tables have a caption and `th`
+scopes. A browser check while building found the empty scrollbar a
+visually hidden table left in its `.table-wrap`, fixed by moving
+`chart-table` to the wrapper (54.16.1).
+
+Three LOW notes, none changed: the Fleet card's caption repeats its lead
+line above it, plus the unit (#618 names the caption so; harmless to a
+screen reader); the no-JS Economy and Odometer tables are long, a row per
+reading, as the print-only ones were (#607 accepted it; a cap would be a
+new question); a "—" cell has no text alternative, as in the report's
+other tables. No token, colour, font, radius or component changed, so
+`DESIGN.md` is unchanged and the Impeccable audit, critique and polish
+were not run. Not covered: German, the other accents, a keyboard pass;
+`design-import/` has no no-JS table state to compare with.
 
 ## Acceptance criteria
 

@@ -96,6 +96,44 @@ final class BarChart implements JsonSerializable
     }
 
     /**
+     * The bars' labels, in drawing order (oldest first for a time axis), so
+     * a template can lay the figures out as a table (spec.md §8 *Printing
+     * reports*, K192, #618).
+     *
+     * @return list<string>
+     */
+    public function labels(): array
+    {
+        return $this->labels;
+    }
+
+    /**
+     * Each series' name and values (one per label, null for a gap), in the
+     * order added: the columns of the chart's table.
+     *
+     * @return list<array{label: string, values: list<?float>}>
+     */
+    public function series(): array
+    {
+        return array_map(
+            static fn (array $series): array => ['label' => $series['label'], 'values' => $series['values']],
+            $this->series,
+        );
+    }
+
+    /** Decimal places the chart shows its values at. */
+    public function decimals(): int
+    {
+        return $this->decimals;
+    }
+
+    /** Currency code when the values are money; null otherwise. */
+    public function currency(): ?string
+    {
+        return $this->currency;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function jsonSerialize(): array

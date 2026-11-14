@@ -67,8 +67,11 @@
         {% for currency, chart in fleet_charts %}
             <section class="card" aria-labelledby="true-cost-fleet-{{ currency }}">
                 <h2 id="true-cost-fleet-{{ currency }}" class="card__title">{{ 'true_cost.fleet_title'|trans }}</h2>
-                <p class="muted">{{ 'true_cost.fleet_lead'|trans({currency: currency_name(currency)}) }}</p>
-                {{ ui.chart(chart, 'true_cost.fleet_lead'|trans({currency: currency_name(currency)})) }}
+                {% set fleet_lead = 'true_cost.fleet_lead'|trans({currency: currency_name(currency)}) %}
+                <p class="muted">{{ fleet_lead }}</p>
+                {{ ui.chart(chart, fleet_lead) }}
+                {# The same figures as a years × vehicles table: without JS, for screen readers and on paper (K192, #618). #}
+                {{ ui.bar_chart_table(chart, fleet_lead, 'fuel.chart.cost_axis'|trans({unit: prefs().distanceUnit.value}), 'true_cost.fleet_year'|trans) }}
             </section>
         {% endfor %}
 

@@ -111,7 +111,7 @@ final class PrintReportsTest extends AppTestCase
         $charts = 0;
         $paths = [
             '/reports', '/reports?vehicle=' . $id, '/upcoming',
-            '/vehicles/' . $id . '/fuel', '/vehicles/' . $id . '/odometer',
+            '/vehicles/' . $id . '/fuel', '/vehicles/' . $id . '/odometer', '/reports/true-cost',
         ];
         foreach ($paths as $path) {
             $document = Html::document(self::body($this->browser->get($path)));
@@ -126,7 +126,7 @@ final class PrintReportsTest extends AppTestCase
 
         // A line chart's own points, newest first, in the owner's units.
         $mileage = Html::document(self::body($this->browser->get('/vehicles/' . $id . '/odometer')));
-        $table = Html::element($mileage, '.print-only > table.chart-print-table');
+        $table = Html::element($mileage, '.table-wrap.chart-table > table.chart-print-table');
         $caption = Html::element($mileage, '.chart-print-table caption');
         self::assertStringContainsString('Odometer over time · Miles', self::text($caption));
         $rows = self::rows($table);
@@ -140,6 +140,34 @@ final class PrintReportsTest extends AppTestCase
         self::assertSame(['20 Sept 2026', '£1.49'], $price[0], 'price per litre, at the chart’s precision');
         // Both Economy | Cost panels are in the page; print CSS shows the hidden one.
         self::assertCount(2, $fuel->querySelectorAll('.print-report [data-trend-panel]'));
+    }
+
+    /**
+     * K192 (#607, #617): a chart card with no table of its own shows the
+     * chart's table on screen without JS, so none is print-only, and the
+     * Economy trend hint about the dashed line is marked to show only with
+     * the chart.
+     */
+    public function testAChartCardWithNoTableOfItsOwnShowsOneWithoutJs(): void
+    {
+        $id = $this->golf->id;
+        foreach (['/vehicles/' . $id . '/fuel', '/vehicles/' . $id . '/odometer'] as $path) {
+            $document = Html::document(self::body($this->browser->get($path)));
+            foreach ($document->querySelectorAll('canvas[data-chart]') as $canvas) {
+                $card = $canvas->closest('[data-trend-panel], .card');
+                self::assertInstanceOf(Element::class, $card, $path);
+                $onScreen = array_filter(
+                    iterator_to_array($card->querySelectorAll('table')),
+                    static fn (Element $table): bool => $table->closest('.print-only') === null,
+                );
+                self::assertNotSame([], $onScreen, $path . ': a chart card with no table on screen');
+            }
+            self::assertCount(0, $document->querySelectorAll('.print-only table'), $path . ': no chart table is print-only');
+        }
+
+        $fuel = Html::document(self::body($this->browser->get('/vehicles/' . $id . '/fuel')));
+        $hint = Html::element($fuel, '[data-trend-panel="economy"] .field__hint');
+        self::assertTrue($hint->classList->contains('chart-hint'), 'the dashed-line hint shows only with the chart');
     }
 
     public function testASwitchedOffModuleStillAnswers404AndLeavesTheOtherPrints(): void

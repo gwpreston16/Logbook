@@ -126,8 +126,9 @@ final readonly class ScanReader
             $read = ScanProblem::Failed;
         }
 
+        // Only a completed read is an Extraction, so the file was prepared; a failure may not have got that far.
         if ($read instanceof Extraction) {
-            $this->uploads->setResult($upload->id, ScanStatus::Read, $read->toArray(), $prepared?->pageCount);
+            $this->uploads->setResult($upload->id, ScanStatus::Read, $read->toArray(), $prepared->pageCount);
         } else {
             $this->uploads->setResult($upload->id, ScanStatus::Failed, ['error' => $read->value], $prepared?->pageCount);
         }

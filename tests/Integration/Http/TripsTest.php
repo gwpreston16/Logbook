@@ -738,7 +738,6 @@ final class TripsTest extends AppTestCase
     private function png(string $name): UploadedFile
     {
         $bytes = base64_decode(self::PNG, true);
-        self::assertIsString($bytes);
 
         return new UploadedFile($this->tempFile($name, $bytes), $name, 'image/png', strlen($bytes), UPLOAD_ERR_OK);
     }

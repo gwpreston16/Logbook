@@ -9,3 +9,55 @@ parameters:
         - tests
         - phinx.php
     tmpDir: var/cache/phpstan
+
+    # K175 (#620): PHPStan 2.3 narrows a property after an assertion (for
+    # example assertSame([], $this->mail->sent)) and keeps that narrowing
+    # after a call that writes to it through another object or a reference,
+    # so later reads look empty. One entry per message and file, never a
+    # wildcard; checked on PHPStan 2.3.5. Remove each when PHPStan stops
+    # reporting it (reportUnmatchedIgnoredErrors says so).
+    ignoreErrors:
+        -
+            rawMessage: 'Call to static method PHPUnit\Framework\Assert::assertIsArray() with array{} will always evaluate to true.'
+            path: tests/Integration/Ai/Insights/AiInsightsTest.php
+            count: 2
+        -
+            rawMessage: 'Cannot access offset ''json'' on mixed.'
+            path: tests/Integration/Ai/Insights/AiInsightsTest.php
+            count: 2
+        -
+            rawMessage: 'Cannot access offset ''messages'' on mixed.'
+            path: tests/Integration/Ai/Insights/AiInsightsTest.php
+            count: 1
+        -
+            rawMessage: 'Cannot access offset ''tools'' on mixed.'
+            path: tests/Integration/Ai/Insights/AiInsightsTest.php
+            count: 1
+        -
+            rawMessage: 'Offset 0 on array{} on left side of ?? does not exist.'
+            path: tests/Integration/Ai/Insights/AiInsightsTest.php
+            count: 3
+        -
+            rawMessage: 'Cannot call method getSubject() on mixed.'
+            path: tests/Integration/Jobs/JobRunnerTest.php
+            count: 1
+        -
+            rawMessage: 'Offset 0 does not exist on array{}.'
+            path: tests/Integration/Jobs/JobRunnerTest.php
+            count: 1
+        -
+            rawMessage: 'Parameter #1 $haystack of function str_contains expects string, mixed given.'
+            path: tests/Integration/MotHistory/MotHistoryJobTest.php
+            count: 1
+        -
+            rawMessage: 'Cannot call method getSubject() on mixed.'
+            path: tests/Integration/Reminder/CategoriesAndQuietHoursTest.php
+            count: 1
+        -
+            rawMessage: 'Offset 0 does not exist on array{}.'
+            path: tests/Integration/Reminder/CategoriesAndQuietHoursTest.php
+            count: 1
+        -
+            rawMessage: 'Parameter #3 $load of method Logbook\Support\Cache\RequestReads::remember() expects callable(): int<1, max>, Closure(): int given.'
+            path: tests/Unit/Support/Cache/RequestReadsTest.php
+            count: 2

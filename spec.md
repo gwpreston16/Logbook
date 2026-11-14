@@ -12776,7 +12776,7 @@ task breakdowns live in the per-phase files; this is the map.
   status pill (§8 *Category colours*). Releases v3.21.11. No migration.
   See [`phase-54.15.md`](docs/phases/phase-54.15.md).
 - **Phase 54.16 — Charts without JS, the Docker image's tooling and the
-  test runs from the known-issues log + patch release** (planned). With JS
+  test runs from the known-issues log + patch release** (complete). With JS
   off, the Fuel tab's *Economy trend* and *Price trend*, *Odometer over
   time* and the true-cost *Fleet* card show their figures as a table, the
   Fleet card's being new, and the economy hint shows only with the chart

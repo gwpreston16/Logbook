@@ -60,14 +60,15 @@ final readonly class CreatePartAction
         if ($fit instanceof ValidationErrors) {
             $errors = ($errors ?? ($data instanceof ValidationErrors ? $data : new ValidationErrors()))->merge($fit);
         }
-        if ($errors !== null || $data instanceof ValidationErrors || $fit instanceof ValidationErrors) {
+        // A fit error has already been merged into $errors above.
+        if ($errors !== null || $data instanceof ValidationErrors) {
             return $this->page->render(
                 $request,
                 $response,
                 $vehicle,
                 RequestContext::formValues($request),
                 null,
-                $errors ?? ($data instanceof ValidationErrors ? $data : null),
+                $errors ?? $data,
                 422,
             );
         }

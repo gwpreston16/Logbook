@@ -61,7 +61,7 @@
     "require-dev": {
         "justinrainbow/json-schema": "^6.13",
         "league/openapi-psr7-validator": "^0.24",
-        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^12.5",
         "squizlabs/php_codesniffer": "^4.0"
     },
@@ -70,9 +70,18 @@
             "Composer\\Config::disableProcessTimeout",
             "PHP_CLI_SERVER_WORKERS=4 php -S 0.0.0.0:8090 -t public bin/dev-router.php"
         ],
-        "test": "phpunit",
-        "test:unit": "phpunit --testsuite unit",
-        "test:integration": "phpunit --testsuite integration",
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ],
+        "test:unit": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit --testsuite unit"
+        ],
+        "test:integration": [
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit --testsuite integration"
+        ],
         "test:js": "node --test tests/js/*.test.js",
         "test:coverage": [
             "Composer\\Config::disableProcessTimeout",

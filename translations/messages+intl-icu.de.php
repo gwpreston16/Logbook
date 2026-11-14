@@ -2765,6 +2765,7 @@ return [
         'report_link' => 'Echte Kosten nach Jahr →',
         'fleet_title' => 'Fuhrpark',
         'fleet_lead' => 'Gesamtkosten pro Strecke nach Jahr, Fahrzeuge in {currency}.',
+        'fleet_year' => 'Jahr',
         'empty_title' => 'Noch nichts zu zeigen',
         'empty_body' => 'Erfasse Kosten und Kilometerstände, dann erscheinen hier die Kosten pro Strecke jedes Fahrzeugs nach Jahr.',
         'widget_empty' => 'Noch keine Fahrzeuge mit Kosten.',

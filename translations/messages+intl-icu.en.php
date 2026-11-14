@@ -2768,6 +2768,7 @@ return [
         'report_link' => 'True cost by year →',
         'fleet_title' => 'Fleet',
         'fleet_lead' => 'Total cost per distance by year, vehicles in {currency}.',
+        'fleet_year' => 'Year',
         'empty_title' => 'Nothing to show yet',
         'empty_body' => 'Log costs and mileage readings, and each vehicle’s cost per distance appears here by year.',
         'widget_empty' => 'No vehicles with costs to show yet.',

@@ -147,7 +147,7 @@ Legend: ✅ complete · 🚧 in progress · 📋 planned
 | [54.13](docs/phases/phase-54.13.md) | The Symfony advisories and the vendored libraries from the known-issues log + patch release | ✅ |
 | [54.14](docs/phases/phase-54.14.md) | Big odometer readings, upgrade caches and small phone fixes from the known-issues log + patch release | ✅ |
 | [54.15](docs/phases/phase-54.15.md) | Category colours on the dashboard's rows + patch release | ✅ |
-| [54.16](docs/phases/phase-54.16.md) | Charts without JS, the Docker image's tooling and the test runs from the known-issues log + patch release | 📋 |
+| [54.16](docs/phases/phase-54.16.md) | Charts without JS, the Docker image's tooling and the test runs from the known-issues log + patch release | ✅ |
 
 *Update the status column as each phase lands.*
 

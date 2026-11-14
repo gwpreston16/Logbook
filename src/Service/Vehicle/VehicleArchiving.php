@@ -126,7 +126,8 @@ final readonly class VehicleArchiving
             return 'vehicle.archived_written_off';
         }
 
-        if ($end !== null && $agreement !== null) {
+        // An end is only worked out for an active agreement (above).
+        if ($end !== null) {
             $this->finance->end($user, $vehicle, $agreement, $end);
         }
         $this->vehicles->archiveAs($user, $vehicle, Disposal::from($chosen), $saleDate, $salePrice);
