@@ -223,7 +223,7 @@ for 54.20.
 
 - [x] VERSION, CHANGELOG and README status for the next patch release
       (#643): 3.21.16 unless 54.20 has taken it.
-- [ ] Tag the release once merged.
+- [x] Tag `v3.21.16` once merged.
 
 ## Acceptance criteria
 
