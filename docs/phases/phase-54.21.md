@@ -5,7 +5,7 @@ their keys without the server's `openssl.cnf`, the test-bootstrap, session
 secret, scheduler and rollback tests pass on Windows, and an empty locale
 no longer reads as the server's own region.*
 
-Status: 🚧 in progress · releases **v3.21.16**, a patch release · file lives in `docs/phases/`
+Status: ✅ complete · released as **v3.21.16**, a patch release · file lives in `docs/phases/`
 
 This is the batch after [Phase 54.19](phase-54.19.md), the last
 known-issues batch. It takes K220 to K225, all found by Phase 54.19's
@@ -188,19 +188,36 @@ for 54.20.
 
 ### 54.21.4 Checked on native Windows
 
-- [ ] A native `composer test` on Windows (PHP 8.5 from WinGet, as 54.19's
+- [x] A native `composer test` on Windows (PHP 8.5 from WinGet, as 54.19's
       run, with `OPENSSL_CONF` unset): the 47 tests named in K220 to K225
       pass. Record the result in this file; any test still failing goes
-      in its row, which stays *Open*.
+      in its row, which stays *Open*. *Done 2026-11-19:* the first run had
+      42 failures and errors. 40 were the checkout's read-only folders
+      again (K185's cause, "Upload target path is not writable"; cleared
+      with `attrib -R var\* /S /D` from `cmd`), not the app. Two were
+      K220 not yet finished: php-jwt's PS256 path
+      (`TokenValidatorTest::testAGoodTokenPasses@PS256`) and
+      `HeaderSignInTest::testAnRs256JwtIsRefused` export the RSA key with
+      `openssl_pkey_export()` and no configuration. `TestKeys::rsaPem()`
+      now exports with `tests/Fixtures/openssl.cnf`; `FakeIdentityProvider`
+      signs RSA tokens with that PEM text and the header test uses it;
+      `TestKeysTest`'s child PHP (`OPENSSL_CONF=/nonexistent`, where a bare
+      export returns false) also exports one. The rerun: Windows 11, PHP 8.5.12 from WinGet, SQLite, `OPENSSL_CONF` unset: 4,935 tests, 0 failures, 36 skipped, in 20 min 9 s,
+      no "Maximum execution time".
 
 ### 54.21.5 Finish
 
-- [ ] Known-issues rows K220 to K225 *Fixed* (Phase 54.21); #644 to #647
-      marked as built. *So far:* K220, K223, K225 and K226 *Fixed*;
-      K221, K222 and K224 wait for 54.21.4; #644 to #648 built.
-- [ ] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
-- [ ] Merge review; merge. (After the pull request; merge as a merge
-      commit, not a squash.)
+- [x] Known-issues rows K220 to K225 *Fixed* (Phase 54.21); #644 to #647
+      marked as built. K220, K223, K225 and K226 *Fixed* with the pull
+      request; K221, K222 and K224 *Fixed* after 54.21.4 (2026-11-19),
+      and K220's row notes the two tests 54.21.4 found; #644 to #648
+      built.
+- [x] CHANGELOG [Unreleased]; spec §13; ROADMAP status.
+- [x] Merge review; merge. *2026-11-19:* pull request #242 was merged as
+      a merge commit before 54.21.4 ran and without a merge review; the
+      native Windows run above stands in for the check this test-only
+      phase needed, and the K220 follow-up goes in with the release
+      commit.
 
 ### Release
 

@@ -15,12 +15,14 @@ final class TestKeysTest extends TestCase
 {
     /**
      * A child PHP with `OPENSSL_CONF` pointing nowhere stands in for such a machine: a bare
-     * `openssl_pkey_new()` returns false there, and the helper must still make both kinds of key.
+     * `openssl_pkey_new()` returns false there, and the helper must still make both kinds of key
+     * and export the RSA one as PEM (a bare `openssl_pkey_export()` fails there too).
      */
     public function testKeysAreMadeWhenPhpFindsNoOpensslConfiguration(): void
     {
         $code = sprintf(
-            'require %s; Logbook\Tests\Support\TestKeys::rsa(); Logbook\Tests\Support\TestKeys::ec(); echo "made";',
+            'require %s; Logbook\Tests\Support\TestKeys::rsa(); Logbook\Tests\Support\TestKeys::ec();'
+                . ' echo str_starts_with(Logbook\Tests\Support\TestKeys::rsaPem(), "-----BEGIN") ? "made" : "no PEM";',
             var_export((string) realpath(dirname(__DIR__, 2) . '/Support/TestKeys.php'), true),
         );
         // The whole environment with OPENSSL_CONF laid over it: a bare array would replace it, and

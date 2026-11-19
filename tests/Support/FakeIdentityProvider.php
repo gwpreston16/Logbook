@@ -311,15 +311,18 @@ final class FakeIdentityProvider
     }
 
     /**
-     * @return array{private: OpenSSLAsymmetricKey, public: array<string, string>}
+     * The private half is PEM text, not a key object: php-jwt's PS256 path exports a key object
+     * without the test configuration, which fails where PHP finds no openssl.cnf (K220).
+     *
+     * @return array{private: string, public: array<string, string>}
      */
     private static function rsa(): array
     {
-        $key = TestKeys::rsa();
-        $details = openssl_pkey_get_details($key);
+        $pem = TestKeys::rsaPem();
+        $details = openssl_pkey_get_details(openssl_pkey_get_private($pem) ?: throw new RuntimeException('bad PEM'));
         assert(is_array($details) && is_array($details['rsa'] ?? null));
 
-        return ['private' => $key, 'public' => [
+        return ['private' => $pem, 'public' => [
             'kty' => 'RSA',
             'kid' => 'rsa-1',
             'use' => 'sig',

@@ -12895,7 +12895,7 @@ task breakdowns live in the per-phase files; this is the map.
   (#634). No migration.
   See [`phase-54.19.md`](docs/phases/phase-54.19.md).
 - **Phase 54.21 — The native Windows test run from the known-issues log
-  + patch release** (in progress). The signing-key tests pass their own
+  + patch release** (complete). The signing-key tests pass their own
   minimal `openssl.cnf`, so they run where PHP finds none (§9, K220,
   #644); `TestBootstrapTest` sets its variables without a shell (K221);
   `SessionSecretFileTest` checks the `0600` mode only where the OS has it
@@ -12903,7 +12903,7 @@ task breakdowns live in the per-phase files; this is the map.
   K223, #645); `JobsPagesTest` expects the cron line the page builds
   (K224, #646); the test migrator runs phinx at a wide console
   width (§9, K225, #647); the OCR stand-in passes PHPStan on PHP 8.5
-  (K226, #648). Releases the next patch release (#643). No
+  (K226, #648). Releases v3.21.16 (#643). No
   migration. See [`phase-54.21.md`](docs/phases/phase-54.21.md).
 
 ---

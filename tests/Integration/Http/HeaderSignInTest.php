@@ -563,11 +563,7 @@ final class HeaderSignInTest extends AppTestCase
     {
         [$app, $log, $clock] = $this->jwtApp();
         $this->createOwner($app);
-        $key = TestKeys::rsa();
-        $pem = '';
-        openssl_pkey_export($key, $pem);
-        self::assertIsString($pem);
-        $token = self::proxyJwt($clock, [], $pem, 'RS256');
+        $token = self::proxyJwt($clock, [], TestKeys::rsaPem(), 'RS256');
 
         self::assertStringStartsWith('/login', self::location($this->viaProxy($app, ['X-authentik-jwt' => $token])));
         self::assertCount(1, self::logLines($log, 'the JWT uses the algorithm "RS256"; only HS256 is accepted.'));
